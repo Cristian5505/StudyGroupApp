@@ -5,4 +5,9 @@ from app import db
 from flask_login import FlaskLoginClient, LoginManager, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 import sys
+from app import *
 
+@app.route('/')
+def home():
+    return render_template('group.html')
+    
