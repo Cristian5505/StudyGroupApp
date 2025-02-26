@@ -16,13 +16,11 @@ db = SQLAlchemy(app)
 
 # Login Configuration
 login = LoginManager(app)
-login.login_view = 'base'
+login.login_view = 'login'
+
+from app import routes, models
 
 @login.user_loader
 def load_user(id):
     return models.User.query.get(int(id))
-
-from app import routes, models
-
-
 

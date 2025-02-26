@@ -11,18 +11,18 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = get_user(form.username.data)
-        if user and check_password_hash(user.password, form.password.data):
+        if user and user.check_password(form.password.data):
             login_user(user)
             return redirect(url_for('home'))
         else:
             flash('Invalid username or password')
-    return render_template('base.html', form=form)
+    return render_template('login.html', form=form)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        hashed_password = generate_password_hash(form.password.data, method='sha256')
+        hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
@@ -37,6 +37,9 @@ def logout():
     return redirect(url_for('login'))
 
 @app.route('/')
-@login_required
 def home():
-    return render_template('home.html')
+    if current_user.is_authenticated:
+        return render_template('home.html')
+    else:
+        form = LoginForm()
+        return render_template('login.html', form=form)
