@@ -1,0 +1,18 @@
+body {
+    font-family: Arial, sans-serif;
+}
+.tabs {
+    margin-bottom: 20px;
+}
+.tab {
+    display: inline-block;
+    margin-right: 15px; cursor: pointer;
+}
+.feed {
+    border: 1px solid #ccc;
+    padding: 10px;
+    height: 300px;
+    overflow-y: scroll;}
+.message {
+    margin: 5px 0;
+}

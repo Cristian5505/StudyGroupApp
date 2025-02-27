@@ -1,0 +1,17 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="../static/styles.css">
+</head>   
+    {% block page %}{% endblock %}
+    <div class="tabs">
+        <a class="tab" href="/">Home</a>
+        <a class="tab" href="/notes">Notes</a>
+        <a class="tab" href="/mkquiz">Quiz Create</a>
+        <a class="tab" href="/group">Group Management</a>
+    </div>
+    {% block content %}{% endblock %}
+</html>
+    

@@ -9,5 +9,16 @@ from app import *
 
 @app.route('/')
 def home():
+    return render_template('home.html')
+
+@app.route('/group')
+def group():
     return render_template('group.html')
-    
+
+@app.route('/mkquiz')
+def mkquiz():
+    return render_template('mkquiz.html')
+
+@app.route('/notes')
+def notes():
+    return render_template('notes.html')
