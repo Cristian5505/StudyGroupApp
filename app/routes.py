@@ -22,3 +22,7 @@ def mkquiz():
 @app.route('/notes')
 def notes():
     return render_template('notes.html')
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
