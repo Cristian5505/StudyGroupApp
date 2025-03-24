@@ -28,6 +28,16 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return '{} {}'.format(self.username, self.email)
     
+    def get_owned_groups(self): #Returns all the groups a user is owner of
+        return StudyGroup.query.filter_by(owner_id=self.id).all()
+
+    def get_joined_groups(self): #Returns all the groups a user is in.
+        return [membership.group for membership in self.memberships]
+
+    def is_moderator(self, group_id): #Checks if a user is a moderator in a given group.
+        membership = Member.query.filter_by(user_id=self.id, group_id=group_id).first()
+        return membership and membership.moderator
+    
 class StudyGroup(db.Model):
     __tablename__='studygroup'
     id = db.Column(db.Integer, primary_key=True)
@@ -37,6 +47,29 @@ class StudyGroup(db.Model):
 
     members = db.relationship('Member', backref='group', lazy=True) #one to many, study group can have many members
     messages = db.relationship('Message', backref='group', lazy=True) #one to many, study group can have many messages
+
+    
+    def get_members(self): #Returns the list of members in a given group
+        return [member.user for member in self.members]
+
+    def has_member(self, user_id): #Checks to see if a user is a member
+        return Member.query.filter_by(user_id=user_id, group_id=self.id).first() is not None
+
+    def add_member(self, user_id, moderator=False): #Adds a user as a member, mod is false by default but may be changed to true
+        if not self.has_member(user_id):
+            new_member = Member(user_id=user_id, group_id=self.id, moderator=moderator)
+            db.session.add(new_member)
+            db.session.commit()
+
+    def remove_member(self, user_id): #Removes a member
+        membership = Member.query.filter_by(user_id=user_id, group_id=self.id).first()
+        if membership:
+            db.session.delete(membership)
+            db.session.commit()
+    
+    @staticmethod
+    def search_by_name(query): #Searches for study groups by the name column, not case sensitive
+        return StudyGroup.query.filter(StudyGroup.name.ilike(f"%{query}%")).all()
 
 class Member(db.Model): #many to many, many users can be members of many groups
     __tablename__ = 'member'
