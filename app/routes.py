@@ -82,7 +82,7 @@ def register_handler():
     db.session.add(new_user)
     db.session.commit()
     error='Account created, Please Log in'
-    return redirect(url_for('login'), error_message=error)
+    return redirect(url_for('login', error_message=error))
 
 
 @app.route('/login')
