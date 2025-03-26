@@ -13,3 +13,17 @@ class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Register')
+    
+class CreateGroupForm(FlaskForm):
+    name = StringField('Group Name', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    public = BooleanField('Public Group')
+    submit = SubmitField('Create Group')
+    
+class InviteForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    submit = SubmitField('Invite')
+
+class MessageForm(FlaskForm):
+    message = StringField('Message', validators=[DataRequired()])
+    submit = SubmitField('Send')

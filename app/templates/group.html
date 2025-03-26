@@ -14,19 +14,22 @@
    <body>
        <h1>Group Feed</h1>
        <div class="tabs">
-           <a class="tab" href="/">Home</a>
-           <a class="tab" href="/home">Notes</a>
+           <a class="tab" href="{{ url_for('home') }}">Home</a>
+           <a class="tab" href="{{ url_for('group', group_id=group.id) }}">Notes</a>
            <a class="tab" href="/mkquiz">Quiz Create</a>
            <a class="tab" href="/notes">Group Management</a>
        </div>
 
        <div class="feed">
            {% for message in messages %}
-               <div class="message">{{ message }}</div>
+               <div class="message">
+                <strong>{{ message.author.username}}: </strong> {{message.message }} 
+               </div>
            {% endfor %}
        </div>
 
-       <form method="POST" action="/submit">
+       <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
+           {{ form.hidden_tag() }}
            <input type="text" name="message" placeholder="Type your message here..." required>
            <button type="submit">Submit</button>
        </form>

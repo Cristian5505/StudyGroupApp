@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>Create Group</title>
 </head>
 <body>
     <nav>
@@ -13,11 +13,24 @@
         <a href="{{ url_for('logout') }}">Logout</a>
         <a href="{{ url_for('create_group') }}">Create Group</a>
         <a href="{{ url_for('join_group') }}">Join Group</a>
-        <a href="{{ url_for('my_groups') }}">My Groups</a>
     </nav>
     <div class="container">
-        <h2>Welcome, {{ current_user.username }}!</h2>
-        <p>This is the home page.</p>
+        <h2>Create Group</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div>
+                {{ form.name.label }} {{ form.name }}
+            </div>
+            <div>
+                {{ form.description.label }} {{ form.description }}
+            </div>
+            <div>
+                {{ form.public.label }} {{ form.public }}
+            </div>
+            <div>
+                <input type="submit" value="Create Group">
+            </div>
+        </form>
     </div>
 </body>
 </html>

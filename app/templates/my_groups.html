@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>My Groups</title>
 </head>
 <body>
     <nav>
@@ -16,8 +16,15 @@
         <a href="{{ url_for('my_groups') }}">My Groups</a>
     </nav>
     <div class="container">
-        <h2>Welcome, {{ current_user.username }}!</h2>
-        <p>This is the home page.</p>
+        <h2>My Groups</h2>
+        <ul>
+            {% for group in groups %}
+                <li>
+                    <strong>{{ group.name }}</strong> - {{ group.description }}
+                    <a href="{{ url_for('group', group_id=group.id) }}">View Group</a>
+                </li>
+            {% endfor %}
+        </ul>
     </div>
 </body>
 </html>
