@@ -15,9 +15,36 @@ def home():
 def group():
     return render_template('group.html')
 
-@app.route('/mkquiz')
+@app.route('/mkquiz', methods=['GET', 'POST'])
 def mkquiz():
-    return render_template('mkquiz.html')
+    if request.method == 'POST':
+        mc_question = request.form.get('mcQuestion')
+        mc_options = request.form.get('mcOptions')
+        open_ended_question = request.form.get('openEndedQuestion')
+
+        questions = session.get('questions', [])
+
+        if mc_question:
+            questions.append({
+                'type': 'mc',
+                'question': mc_question,
+                'options': mc_options.split(',')
+            })
+        if open_ended_question:
+            questions.append({
+                'type': 'open_ended',
+                'question': open_ended_question
+            })
+
+        session['questions'] = questions
+        return redirect(url_for('mkquiz'))
+
+    return render_template('mkquiz.html', questions=session.get('questions', []))
+
+@app.route('/clear_session', methods=['POST'])
+def clear_session():
+    session.pop('questions', None)
+    return redirect(url_for('mkquiz'))
 
 @app.route('/notes')
 def notes():
