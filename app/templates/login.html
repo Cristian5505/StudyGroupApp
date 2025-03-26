@@ -2,15 +2,13 @@
 {% block title %}Login{% endblock %}
 {% block page %}<h1>Login</h1>{% endblock %}
 {% block content %}
-    <body>
-        <div>
-            <form method="POST" action="/submit">
-                <input type="text" name="message" placeholder="Username" required>
+    <div>
+        <form method="POST" action="login_handler" style="display: flex; flex-direction: column; gap: 15px; width: 300px;">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
             </form>
-            <form method="POST" action="/submit">
-                <input type="text" name="message" placeholder="Password" required>
-            </form>
-            <button>Login</button><button style="margin-left: 10px;">Forgot Password</button>
-        </div>
-    </body>
+        <button>Forgot Password</button>
+        <a href="/register"><button style="margin-left: 10px;">Register</button></a>
+    </div>
 {% endblock %}
