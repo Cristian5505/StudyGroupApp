@@ -10,7 +10,7 @@ from app import *
 @app.route('/')
 def home():
     if 'profile_picture' not in session:
-        session['profile_picture'] = '/static/profile_pics/scsu.jpg'
+        session['profile_picture'] = 'scsu.jpg'
     return render_template('home.html')
 
 @app.route('/group')
