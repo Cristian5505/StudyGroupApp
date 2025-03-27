@@ -14,6 +14,8 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(64), index=True, nullable=False)
     email = db.Column(db.String(64), index=True, unique=True, nullable=False)
     admin = db.Column(db.Boolean, index=True, default=False) #site admin, different from group admin / mod
+    picture =db.Column(db.String(256), nullable=False, default = "/static/profile_pics/scsu.jpg") #path to their profile picture
+    description = db.Column(db.String(256), default = "") #for their profile
 
     study_groups = db.relationship('StudyGroup', backref='owner', lazy=True) #one to many, user can create multiple study groups
     memberships = db.relationship('Member', backref='user', lazy=True)#one to many, user can be members of multiple groups
@@ -38,6 +40,14 @@ class User(db.Model, UserMixin):
         membership = Member.query.filter_by(user_id=self.id, group_id=group_id).first()
         return membership and membership.moderator
     
+    def update_picture(self, newPicture):
+        self.picture = newPicture
+        db.session.commit()
+
+    def update_description(self, newDescription):
+        self.description = newDescription
+        db.session.commit()
+
 class StudyGroup(db.Model):
     __tablename__='studygroup'
     id = db.Column(db.Integer, primary_key=True)

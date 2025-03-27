@@ -1,6 +1,9 @@
 body {
     font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
 }
+
 .tabs {
     margin-bottom: 20px;
 }
@@ -8,19 +11,61 @@ body {
     display: inline-block;
     margin-right: 15px; cursor: pointer;
 }
+
 .feed {
     border: 1px solid #ccc;
     padding: 10px;
     height: 300px;
-    overflow-y: scroll;}
+    overflow-y: scroll;
+    width: 100%;
+    max-width: 800px;
+    margin-top: 20px;
+}
+
 .message {
     margin: 5px 0;
 }
+
 .tab-content {
     margin-top: 20px;
 }
+
 .preview {
     border: 1px solid #ccc;
     padding: 10px;
     margin-top: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #ccc;
+}
+
+.profile-pic-container {
+    margin-left: auto;
+}
+
+.profile-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgb(122, 119, 119);
+}
+
+.main {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tabs-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
 }

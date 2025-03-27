@@ -5,15 +5,27 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="../static/styles.css">
 </head>   
-    {% block page %}{% endblock %}
-    <div class="tabs">
-        <a class="tab" href="/">Home</a>
-        <a class="tab" href="/notes">Notes</a>
-        <a class="tab" href="/mkquiz">Quiz Create</a>
-        <a class="tab" href="/group">Group Management</a>
-        <a class="tab" href="{% if session.logged_in %}/logout{% else %}/login{% endif %}">
-            {% if session.logged_in %}Log out{% else %}Login{% endif %}</a>
+<body>
+    <div class="header">
+        <div class="tabs">
+            <a class="tab" href="/">Home</a>
+            <a class="tab" href="/notes">Notes</a>
+            <a class="tab" href="/mkquiz">Quiz Create</a>
+            <a class="tab" href="/group">Group Management</a>
+            <a class="tab" href="/customization">Customization</a>
+            <a class="tab" href="{% if session.logged_in %}/logout{% else %}/login{% endif %}">
+                {% if session.logged_in %}Log out{% else %}Login{% endif %}
+            </a>
+        </div>
+
+        <div class="profile-pic-container">
+            <img src="{{ url_for('static', filename='profile_pics/' + session.get('profile_picture', 'scsu.jpg')) }}" 
+                 width="80" height="80" class="profile-pic" alt="Profile Picture">
+        </div>        
     </div>
-    {% block content %}{% endblock %}
+
+    <div class="main">
+        {% block content %}{% endblock %}
+    </div>
+</body>
 </html>
-    

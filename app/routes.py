@@ -9,6 +9,8 @@ from app import *
 
 @app.route('/')
 def home():
+    if 'profile_picture' not in session:
+        session['profile_picture'] = '/static/profile_pics/scsu.jpg'
     return render_template('home.html')
 
 @app.route('/group')
@@ -72,11 +74,25 @@ def user_login():
         session['logged_in']=True
         session['username']=user.username
         session['Admin']=user.admin
+        session['profile_picture'] = user.picture
 
         return redirect(url_for('home'))
     
     error_message='Incorrect Username or Password'
     return redirect(url_for('login', error=error_message))
+
+@app.route('/customization', methods=['GET', 'POST'])
+def customization():
+    if request.method == 'POST':
+        selected_picture = request.form.get('profile_picture')
+        session['profile_picture'] = selected_picture
+        if session.get('logged_in'):
+            user = User.query.filter_by(username=session['username']).first()
+            if user:
+                user.picture = selected_picture
+                db.session.commit()
+        return redirect(url_for('customization'))
+    return render_template('customization.html')
 
 @app.route('/logout')
 def logout():

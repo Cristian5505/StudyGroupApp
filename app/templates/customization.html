@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Customize Your Profile</h2>
+
+<form method="POST">
+    <label>Choose a Profile Picture:</label>
+    <div>
+        {% for pic in ["scsu.jpg", "science.jpg","math.jpg", "book.jpg", "music.jpg", "track.jpg", "football.jpg"] %}
+            <label>
+                <input type="radio" name="profile_picture" value="{{ pic }}" required>
+                <img src="{{ url_for('static', filename='profile_pics/' + pic) }}" style="width: 100px; height: 100px;" class="profile-pic" alt="{{ pic }}">
+
+            </label>
+        {% endfor %}
+    </div>
+
+    {% if session.logged_in %}
+        <label>Update Description:</label>
+        <textarea name="description">{{ session.get('description', '') }}</textarea>
+    {% else %}
+    <p>You aren't logged in so description can't be changed.</p>
+    {% endif %}
+
+    <button type="submit">Save Changes</button>
+</form>
+{% endblock %}
