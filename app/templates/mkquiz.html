@@ -1,29 +1,43 @@
 {% extends "base.html" %}
 {% block content %}
-
     <div class="tab-content">
         <div class="tab-pane fade show active" id="tab1">
             <h2>Create Questions</h2>
-            <form>
+            <form method="POST" action="/mkquiz"> 
                 <div class="mb-3">
                     <label for="mcQuestion" class="form-label">Multiple Choice Question</label>
-                    <input type="text" class="form-control" id="mcQuestion" placeholder="Enter your question">
+                    <input type="text" class="form-control" id="mcQuestion" name="mcQuestion" placeholder="Enter your question">
                 </div>
                 <div class="mb-3">
                     <label for="mcOptions" class="form-label">Options (comma separated)</label>
-                    <input type="text" class="form-control" id="mcOptions" placeholder="Option1, Option2, Option3">
+                    <input type="text" class="form-control" id="mcOptions" name="mcOptions" placeholder="Option1, Option2, Option3">
                 </div>
                 <div class="mb-3">
                     <label for="openEndedQuestion" class="form-label">Open-Ended Question</label>
-                    <input type="text" class="form-control" id="openEndedQuestion" placeholder="Enter your question">
+                    <input type="text" class="form-control" id="openEndedQuestion" name="openEndedQuestion" placeholder="Enter your question">
                 </div>
-                <button type="submit" class="btn btn-primary">Add Question</button>
+                <button type="submit" class="btn btn-primary">Add Question</button> 
             </form>
+            <form method="POST" action="/clear_session" style="display:inline;">
+                <button type="submit" class="btn btn-danger">Clear Session</button>
+            </form>
+
             <div class="preview">
                 <h3>Preview Quiz</h3>
                 <div id="quizPreview">
+                    {% for question in questions %}
+                        {% if question['type'] == 'mc' %}
+                            <strong>Multiple Choice:</strong> {{ question['question'] }} <br>
+                            <strong>Options:</strong> {{ question['options'] | join(', ') }} <br> 
+                        {% elif question['type'] == 'open_ended' %}
+                            <strong>Open Ended:</strong> {{ question['question'] }} <br>
+                        {% endif %}
+                        <hr>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 {% endblock %}
+
+
