@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Group</title>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('register') }}">Register</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+        <a href="{{ url_for('create_group') }}">Create Group</a>
+        <a href="{{ url_for('join_group') }}">Join Group</a>
+    </nav>
+    <div class="container">
+        <h2>Join a Public Group</h2>
+        <ul>
+            {% for group in public_groups %}
+                <li>
+                    <strong>{{ group.name }}</strong> - {{ group.description }}
+                    <form method="POST" action="{{ url_for('join_group') }}">
+                        <input type="hidden" name="group_id" value="{{ group.id }}">
+                        <button type="submit">Join Group</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

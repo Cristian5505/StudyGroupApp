@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 {% block title %}Register{% endblock %}
 {% block page %}<h1>Register</h1>{% endblock %}
@@ -12,3 +13,43 @@
         </form>
     </div>
 {% endblock %}
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('login') }}">Login</a>
+    </nav>
+    <div class="container">
+        <h2>Register</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div>
+                {{ form.username.label }} {{ form.username }}
+            </div>
+            <div>
+                {{ form.email.label }} {{ form.email }}
+            </div>
+            <div>
+                {{ form.password.label }} {{ form.password }}
+            </div>
+            <div>
+                <input type="submit" value="Register">
+            </div>
+        </form>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+</body>
+</html>
+>>>>>>> origin/message-dev

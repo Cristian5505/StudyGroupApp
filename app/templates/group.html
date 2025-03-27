@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 {% block title %}Groups{% endblock %}
 {% block page %}<h1>Group Feed</h1>{% endblock %}
@@ -9,8 +10,46 @@
            {% endfor %}
        </div>
        <form method="POST" action="/submit">
+=======
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Message Feed</title>
+       <style>
+           body { font-family: Arial, sans-serif; }
+           .tabs { margin-bottom: 20px; }
+           .tab { display: inline-block; margin-right: 15px; cursor: pointer; }
+           .feed { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+           .message { margin: 5px 0; }
+       </style>
+   </head>
+   <body>
+       <h1>Group Feed</h1>
+       <div class="tabs">
+           <a class="tab" href="{{ url_for('home') }}">Home</a>
+           <a class="tab" href="{{ url_for('group', group_id=group.id) }}">Notes</a>
+           <a class="tab" href="/mkquiz">Quiz Create</a>
+           <a class="tab" href="/notes">Group Management</a>
+       </div>
+
+       <div class="feed">
+           {% for message in messages %}
+               <div class="message">
+                <strong>{{ message.author.username}}: </strong> {{message.message }} 
+               </div>
+           {% endfor %}
+       </div>
+
+       <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
+           {{ form.hidden_tag() }}
+>>>>>>> origin/message-dev
            <input type="text" name="message" placeholder="Type your message here..." required>
            <button type="submit">Submit</button>
        </form>
    </body>
+<<<<<<< HEAD
 {% endblock %}
+=======
+   </html>
+>>>>>>> origin/message-dev
