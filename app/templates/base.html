@@ -11,10 +11,10 @@
             <a class="tab" href="/">Home</a>
             <a class="tab" href="/notes">Notes</a>
             <a class="tab" href="/mkquiz">Quiz Create</a>
-            <a class="tab" href="/group">Group Management</a>
+            <a class="tab" href="/group_management">Group Management</a>
             <a class="tab" href="/customization">Customization</a>
-            <a class="tab" href="{% if session.logged_in %}/logout{% else %}/login{% endif %}">
-                {% if session.logged_in %}Log out{% else %}Login{% endif %}
+            <a class="tab" href="{% if current_user.is_authenticated %}{{ url_for('logout') }}{% else %}{{ url_for('login') }}{% endif %}">
+                {% if current_user.is_authenticated %}Log out{% else %}Login{% endif %}
             </a>
         </div>
 

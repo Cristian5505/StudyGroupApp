@@ -8,9 +8,10 @@
                <div class="message">{{ message }}</div>
            {% endfor %}
        </div>
-       <form method="POST" action="/submit">
-           <input type="text" name="message" placeholder="Type your message here..." required>
-           <button type="submit">Submit</button>
-       </form>
+       <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
+        {{ form.hidden_tag() }}
+        <input type="text" name="message" placeholder="Type your message here..." required>
+        <button type="submit">Submit</button>
+    </form>
    </body>
 {% endblock %}

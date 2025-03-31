@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Join Public Groups{% endblock %}
+
+{% block content %}
+<h1>Find Public Groups to Join</h1>
+<ul>
+    {% if public_groups %}
+        {% for group in public_groups %}
+            <li>
+                <strong>{{ group.name }}</strong> - {{ group.description }}
+                <form method="POST" action="{{ url_for('join_group') }}">
+                    <input type="hidden" name="group_id" value="{{ group.id }}">
+                    <button type="submit">Join Group</button>
+                </form>
+            </li>
+        {% endfor %}
+    {% else %}
+        <p>No public groups are available to join.</p>
+    {% endif %}
+</ul>
+{% endblock %}

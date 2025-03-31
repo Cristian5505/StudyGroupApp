@@ -13,9 +13,26 @@ def home():
         session['profile_picture'] = 'scsu.jpg'
     return render_template('home.html')
 
-@app.route('/group')
-def group():
-    return render_template('group.html')
+@app.route('/group/<int:group_id>', methods=['GET', 'POST'])
+@login_required
+def group(group_id):
+    group = StudyGroup.query.get_or_404(group_id)
+    membership = Member.query.filter_by(user_id=current_user.id, group_id=group_id).first()
+    if not membership:
+        flash('You are not a member of this group.')
+        return redirect(url_for('home'))
+
+    form = MessageForm()
+    if form.validate_on_submit():
+        message_text = form.message.data
+        new_message = Message(user_id=current_user.id, group_id=group.id, message=message_text)
+        db.session.add(new_message)
+        db.session.commit()
+        flash('Message sent!')
+        return redirect(url_for('group', group_id=group.id))
+
+    messages = Message.query.filter_by(group_id=group.id).order_by(Message.time.desc()).all()
+    return render_template('group.html', group=group, messages=messages, form=form)
 
 @app.route('/mkquiz', methods=['GET', 'POST'])
 def mkquiz():
@@ -98,15 +115,16 @@ def user_login():
     user=User.query.filter_by(username=username).first()
 
     if user and check_password_hash(user.password, inputted_password):
-        session['logged_in']=True
-        session['username']=user.username
-        session['Admin']=user.admin
-        session['profile_picture'] = user.picture
+        # Use Flask-Login to log the user in
+        login_user(user)
 
+        # Flash a success message
+        flash('Login successful!')
         return redirect(url_for('home'))
-    
-    error_message='Incorrect Username or Password'
-    return redirect(url_for('login', error=error_message))
+
+    # Flash an error message if login fails
+    flash('Incorrect Username or Password')
+    return redirect(url_for('login'))
 
 @app.route('/customization', methods=['GET', 'POST'])
 def customization():
@@ -121,7 +139,71 @@ def customization():
         return redirect(url_for('customization'))
     return render_template('customization.html')
 
+@app.route('/group_management')
+@login_required
+def group_management():
+    owned_groups = StudyGroup.query.filter_by(owner_id=current_user.id).all()
+    memberships = Member.query.filter_by(user_id=current_user.id).all()
+    member_groups = [membership.group for membership in memberships if membership.group.owner_id != current_user.id]
+    return render_template('group_management.html', owned_groups=owned_groups, member_groups=member_groups)
+
+@app.route('/create_group', methods=['GET', 'POST'])
+@login_required
+def create_group():
+    form = CreateGroupForm()
+    if form.validate_on_submit():
+        new_group = StudyGroup(
+            name=form.name.data,
+            description=form.description.data,
+            owner_id=current_user.id,
+            public=form.public.data
+        )
+        db.session.add(new_group)
+        db.session.commit()
+
+        new_member = Member(user_id=current_user.id, group_id=new_group.id, moderator=True)
+        db.session.add(new_member)
+        db.session.commit()
+
+        flash('Group created successfully!')
+        return redirect(url_for('group_management'))
+    return render_template('create_group.html', form=form)
+
+@app.route('/join_group', methods=['GET', 'POST'])
+@login_required
+def join_group():
+    if request.method == 'POST':
+        group_id = request.form.get('group_id')
+        group = StudyGroup.query.get(group_id)
+        if group and group.public:
+            new_member = Member(user_id=current_user.id, group_id=group.id)
+            db.session.add(new_member)
+            db.session.commit()
+            flash('You have joined the group!')
+            return redirect(url_for('group_management'))
+        else:
+            flash('This group is private and cannot be joined without an invitation.')
+            return redirect(url_for('join_group'))
+    public_groups = StudyGroup.query.filter(
+        StudyGroup.public == True,
+        ~StudyGroup.members.any(Member.user_id == current_user.id)
+    ).all()
+    return render_template('join_group.html', public_groups=public_groups)
+
+from flask import redirect, url_for, flash
+from app import db
+from app.models import *
+
+#Temp route for testing purposes. Delete in final release.
+@app.route('/reset_db')
+def reset_db():
+    db.drop_all()
+    db.create_all()
+    flash("Database has been reset!")
+    return redirect(url_for('home'))
+
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
-    return render_template('login.html')
+    logout_user()
+    flash('You have been logged out.')
+    return redirect(url_for('login'))
