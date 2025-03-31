@@ -3,12 +3,16 @@
 {% block page %}<h1>Group Feed</h1>{% endblock %}
 {% block content %}
    <body>
-       <div class="feed">
-           {% for message in messages %}
-               <div class="message">{{ message }}</div>
-           {% endfor %}
-       </div>
-       <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
+    <div class="feed">
+        {% for message in messages %}
+            <div class="message">
+                <img src="{{ message.author.picture }}" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%;">
+                <strong>{{ message.author.username }}</strong>: {{ message.message }}
+                <p><small>{{ message.time.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+            </div>
+        {% endfor %}
+    </div>
+    <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
         {{ form.hidden_tag() }}
         <input type="text" name="message" placeholder="Type your message here..." required>
         <button type="submit">Submit</button>
