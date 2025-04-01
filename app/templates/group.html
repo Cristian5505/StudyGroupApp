@@ -5,7 +5,7 @@
    <body>
        <div class="feed">
            {% for message in messages %}
-               <div class="message">{{ message }}</div>
+               <div class="message">{{ message.message }}</div>
            {% endfor %}
        </div>
        <form method="POST" action="{{ url_for('group', group_id=group.id) }}">

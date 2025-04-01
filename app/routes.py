@@ -127,17 +127,24 @@ def user_login():
     return redirect(url_for('login'))
 
 @app.route('/customization', methods=['GET', 'POST'])
+@login_required
 def customization():
     if request.method == 'POST':
         selected_picture = request.form.get('profile_picture')
-        session['profile_picture'] = selected_picture
-        if session.get('logged_in'):
-            user = User.query.filter_by(username=session['username']).first()
-            if user:
-                user.picture = selected_picture
-                db.session.commit()
+        new_description = request.form.get('description')
+
+        if selected_picture:
+            current_user.picture = selected_picture
+
+        if new_description is not None:
+            current_user.description = new_description
+
+        db.session.commit()
+        flash('Profile updated.')
         return redirect(url_for('customization'))
+
     return render_template('customization.html')
+
 
 @app.route('/group_management')
 @login_required

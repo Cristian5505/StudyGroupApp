@@ -19,7 +19,7 @@
         </div>
 
         <div class="profile-pic-container">
-            <img src="{{ url_for('static', filename='profile_pics/' + session.get('profile_picture', 'scsu.jpg')) }}" 
+            <img src="{{ url_for('static', filename='profile_pics/' + (current_user.picture if current_user.is_authenticated else 'scsu.jpg')) }}" 
                  width="80" height="80" class="profile-pic" alt="Profile Picture">
         </div>        
     </div>

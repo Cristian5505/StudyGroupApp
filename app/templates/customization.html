@@ -15,11 +15,11 @@
         {% endfor %}
     </div>
 
-    {% if session.logged_in %}
+    {% if current_user.is_authenticated %}
         <label>Update Description:</label>
-        <textarea name="description">{{ session.get('description', '') }}</textarea>
+        <textarea name="description">{{ current_user.description or '' }}</textarea>
     {% else %}
-    <p>You aren't logged in so description can't be changed.</p>
+        <p>You aren't logged in so description can't be changed.</p>
     {% endif %}
 
     <button type="submit">Save Changes</button>
