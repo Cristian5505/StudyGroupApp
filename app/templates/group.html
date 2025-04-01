@@ -6,7 +6,7 @@
     <div class="feed">
         {% for message in messages %}
             <div class="message">
-                <img src="{{ message.author.picture }}" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%;">
+                <img src="{{ url_for('static', filename='profile_pics/' + message.author.picture) }}" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%;">
                 <strong>{{ message.author.username }}</strong>: {{ message.message }}
                 <p><small>{{ message.time.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
             </div>
