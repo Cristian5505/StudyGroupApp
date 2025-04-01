@@ -14,7 +14,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(64), index=True, nullable=False)
     email = db.Column(db.String(64), index=True, unique=True, nullable=False)
     admin = db.Column(db.Boolean, index=True, default=False) #site admin, different from group admin / mod
-    picture =db.Column(db.String(256), nullable=False, default = "/static/profile_pics/scsu.jpg") #path to their profile picture
+    picture =db.Column(db.String(256), nullable=False, default = "scsu.jpg") #path to their profile picture
     description = db.Column(db.String(256), default = "") #for their profile
 
     study_groups = db.relationship('StudyGroup', backref='owner', lazy=True) #one to many, user can create multiple study groups

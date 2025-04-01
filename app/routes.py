@@ -9,9 +9,11 @@ from app import *
 
 @app.route('/')
 def home():
-    if 'profile_picture' not in session:
-        session['profile_picture'] = 'scsu.jpg'
-    return render_template('home.html')
+    profile_picture = 'scsu.jpg'
+    if current_user.is_authenticated:
+        profile_picture = current_user.picture if current_user.picture else 'scsu.jpg'
+
+    return render_template('home.html', profile_picture=profile_picture)
 
 @app.route('/group/<int:group_id>', methods=['GET', 'POST'])
 @login_required
