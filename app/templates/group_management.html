@@ -11,24 +11,9 @@
         <button>Create New Group</button>
     </a>
     <a href="{{ url_for('join_group') }}">
-        <button>Find Public Groups</button>
+        <button>Search for Group</button>
     </a>
 </div>
-<h2>Owned Groups</h2>
-<ul>
-{% if owned_groups %}
-        {% for group in owned_groups %}
-            <li>
-                <strong>{{ group.name }}</strong> - {{ group.description }}
-                <a href="{{ url_for('group', group_id=group.id) }}">
-                    <button>View Group</button>
-                </a>
-            </li>
-        {% endfor %}
-    {% else %}
-        <p>You do not own any groups.</p>
-    {% endif %}
-</ul>
 <h2>Groups You're a Member Of</h2>
 <ul>
     {% if member_groups %}
@@ -42,6 +27,22 @@
         {% endfor %}
     {% else %}
         <p>You are not a member of any groups.</p>
+    {% endif %}
+</ul>
+
+<h2>Owned Groups</h2>
+<ul>
+{% if owned_groups %}
+        {% for group in owned_groups %}
+            <li>
+                <strong>{{ group.name }}</strong> - {{ group.description }}
+                <a href="{{ url_for('group', group_id=group.id) }}">
+                    <button>View Group</button>
+                </a>
+            </li>
+        {% endfor %}
+    {% else %}
+        <p>You do not own any groups.</p>
     {% endif %}
 </ul>
 {% endblock %}

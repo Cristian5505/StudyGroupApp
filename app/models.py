@@ -55,6 +55,7 @@ class StudyGroup(db.Model):
     description = db.Column(db.Text, index=True, nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True, nullable=False)
     public = db.Column(db.Boolean, default=False) #public or private group
+    flairs = db.Column(db.String(256), nullable=True)
 
     members = db.relationship('Member', backref='group', lazy=True) #one to many, study group can have many members
     messages = db.relationship('Message', backref='group', lazy=True) #one to many, study group can have many messages

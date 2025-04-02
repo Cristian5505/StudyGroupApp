@@ -18,6 +18,18 @@ class CreateGroupForm(FlaskForm):
     name = StringField('Group Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     public = BooleanField('Public Group')
+    flairs = SelectMultipleField('Select Flairs', choices=[
+        ('Remote', 'Remote'),
+        ('In-Person', 'In-Person'),
+        ('Note Sharing', 'Note Sharing'),
+        ('Quizzes', 'Quizzes'),
+        ('Math', 'Math'),
+        ('Psychology', 'Psychology'),
+        ('Computer Science', 'Computer Science'),
+        ('Biology', 'Biology'),
+        ('History', 'History'),
+        ('Physics', 'Physics')
+    ])
     submit = SubmitField('Create Group')
     
 class InviteForm(FlaskForm):

@@ -12,7 +12,7 @@ body {
 }
 .tab {
     cursor: pointer;
-    font-size: 28px;
+    font-size: 24px;
 }
 
 .feed {
@@ -43,7 +43,7 @@ body {
     display: flex;
     justify-content: center; 
     align-items: center;   
-    padding: 60px;
+    padding: 40px;
     background-color: #f4f4f4;
     border-bottom: 1px solid #ccc;
     position: relative;
@@ -55,8 +55,8 @@ body {
 }
 
 .profile-pic {
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgb(122, 119, 119);
@@ -94,4 +94,16 @@ button {
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
+}
+
+.flair {
+    display: inline-block;
+    color: red;
+    border: 2px solid black;
+    border-radius: 5px;
+    font-size: 16px;
+    padding: 5px 10px;
+    margin: 5px;
+    font-weight: bold;  
+    border-color: black;
 }

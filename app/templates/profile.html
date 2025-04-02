@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }}'s Profile{% endblock %}
+{% block content %}
+    <h2>{{ user.username }}'s Profile</h2>
+
+    <img src="{{ url_for('static', filename='profile_pics/' + user.picture) }}" alt="Profile Picture" class=profile-pic style="width: 180px; height: 180px;">
+
+    <h3>Description:</h3> 
+        {{ user.description }}
+
+    <h3>Groups:</h3>
+        <ul>
+            {% for group in groups %}
+                <li><a href="{{ url_for('group', group_id=group.id) }}">{{ group.name }}</a></li>
+            {% endfor %}
+        </ul>
+
+{% endblock %}

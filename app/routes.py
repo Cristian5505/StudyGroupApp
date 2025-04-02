@@ -13,7 +13,7 @@ def home():
     if current_user.is_authenticated:
         profile_picture = current_user.picture if current_user.picture else 'scsu.jpg'
 
-    return render_template('home.html', profile_picture=profile_picture)
+    return render_template('home.html', profile_picture=profile_picture, username=current_user.username if current_user.is_authenticated else None)
 
 @app.route('/group/<int:group_id>', methods=['GET', 'POST'])
 @login_required
@@ -32,6 +32,11 @@ def group(group_id):
         db.session.commit()
         flash('Message sent!')
         return redirect(url_for('group', group_id=group.id))
+    
+    selected_flairs = request.form.getlist('flairs')
+    if selected_flairs:
+        group.flairs = ','.join(selected_flairs)
+        db.session.commit()
 
     messages = Message.query.filter_by(group_id=group.id).order_by(Message.time.desc()).all()
     return render_template('group.html', group=group, messages=messages, form=form)
@@ -147,6 +152,12 @@ def customization():
 
     return render_template('customization.html')
 
+@app.route('/profile/<int:user_id>') #allows for clicking on someones profile to see their pic, description, and groups
+@login_required
+def profile(user_id):
+    user = User.query.get(user_id)
+    groups = StudyGroup.query.join(Member).filter(Member.user_id == user.id).all()
+    return render_template('profile.html', user=user, groups=groups)
 
 @app.route('/group_management')
 @login_required
@@ -161,11 +172,13 @@ def group_management():
 def create_group():
     form = CreateGroupForm()
     if form.validate_on_submit():
+        selected_flairs = ",".join(form.flairs.data)
         new_group = StudyGroup(
             name=form.name.data,
             description=form.description.data,
             owner_id=current_user.id,
-            public=form.public.data
+            public=form.public.data,
+            flairs=selected_flairs
         )
         db.session.add(new_group)
         db.session.commit()
@@ -181,6 +194,14 @@ def create_group():
 @app.route('/join_group', methods=['GET', 'POST'])
 @login_required
 def join_group():
+    search_query = request.args.get('search', '')
+    
+    public_groups = StudyGroup.query.filter( #case insensitive search, doesn't show groups user has joined already
+        StudyGroup.public == True,
+        StudyGroup.name.ilike(f'%{search_query}%'),
+        ~StudyGroup.members.any(Member.user_id == current_user.id)
+    ).all()
+    
     if request.method == 'POST':
         group_id = request.form.get('group_id')
         group = StudyGroup.query.get(group_id)
