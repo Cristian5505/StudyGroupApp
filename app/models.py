@@ -5,6 +5,7 @@ from app import db, mail
 from flask import current_app, url_for
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask_mail import Message as MailMessage
+from app import *
 
 def get_user(username):
     user = User.query.filter_by(username=username).first()
@@ -147,3 +148,11 @@ class Message(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('studygroup.id'), index=True, nullable=False)
     message = db.Column(db.Text, nullable=False)
     time = db.Column(db.DateTime, default=datetime.now)
+
+class Quiz(db.Model):
+    __tablename__ = 'quizzes'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    questions = db.Column(db.Text, nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
