@@ -3,12 +3,25 @@
 {% block title %}Join Public Groups{% endblock %}
 
 {% block content %}
-<h1>Find Public Groups to Join</h1>
+<h2>Find Public Groups to Join</h2>
+
+<form method="GET" action="{{ url_for('join_group') }}">
+    <input type="text" name="search" placeholder="Search for a group..." value="{{ request.args.get('search', '') }}">
+    <button type="submit">Search</button>
+</form>
+
 <ul>
     {% if public_groups %}
         {% for group in public_groups %}
             <li>
                 <strong>{{ group.name }}</strong> - {{ group.description }}
+                {% if group.flairs %}
+                    <div><b>Flairs:</b>
+                        {% for flair in group.flairs.split(',') %}
+                            <span class="flair">{{ flair.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
                 <form method="POST" action="{{ url_for('join_group') }}">
                     <input type="hidden" name="group_id" value="{{ group.id }}">
                     <button type="submit">Join Group</button>

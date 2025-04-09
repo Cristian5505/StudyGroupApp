@@ -6,12 +6,18 @@ from flask_login import FlaskLoginClient, LoginManager, login_user, logout_user,
 from werkzeug.security import generate_password_hash, check_password_hash
 import sys
 from app import *
+from sqlalchemy import text 
+import json
+import os 
+from flask import send_from_directory
 
 @app.route('/')
 def home():
-    if 'profile_picture' not in session:
-        session['profile_picture'] = 'scsu.jpg'
-    return render_template('home.html')
+    profile_picture = 'scsu.jpg'
+    if current_user.is_authenticated:
+        profile_picture = current_user.picture if current_user.picture else 'scsu.jpg'
+
+    return render_template('home.html', profile_picture=profile_picture, username=current_user.username if current_user.is_authenticated else None)
 
 @app.route('/group/<int:group_id>', methods=['GET', 'POST'])
 @login_required
@@ -30,13 +36,26 @@ def group(group_id):
         db.session.commit()
         flash('Message sent!')
         return redirect(url_for('group', group_id=group.id))
+    
+    selected_flairs = request.form.getlist('flairs')
+    if selected_flairs:
+        group.flairs = ','.join(selected_flairs)
+        db.session.commit()
 
     messages = Message.query.filter_by(group_id=group.id).order_by(Message.time.desc()).all()
     return render_template('group.html', group=group, messages=messages, form=form)
 
+@app.route('/test_db')
+def test_db():
+    try:
+        result = db.session.execute(text("SELECT VERSION();")).fetchone()
+        return f"Database Connected! Version: {result[0]}"
+    except Exception as e:
+        return f"Database Connection Error: {e}" 
+     
 @app.route('/mkquiz', methods=['GET', 'POST'])
 def mkquiz():
-    if request.method == 'POST':
+    if request.method == 'POST': 
         mc_question = request.form.get('mcQuestion')
         mc_options = request.form.get('mcOptions')
         open_ended_question = request.form.get('openEndedQuestion')
@@ -54,11 +73,57 @@ def mkquiz():
                 'type': 'open_ended',
                 'question': open_ended_question
             })
-
+        
         session['questions'] = questions
-        return redirect(url_for('mkquiz'))
-
+        if 'action' in request.form: 
+               action = request.form['action']
+               if action == 'save' and request.form.get('quizName'):
+                   return redirect(url_for('save_quiz', quiz_name=request.form.get('quizName')))
+               
     return render_template('mkquiz.html', questions=session.get('questions', []))
+
+@app.route('/save_quiz/<quiz_name>', methods=['GET']) 
+@login_required
+def save_quiz(quiz_name):
+    questions = session.get('questions', [])
+    if questions:
+        new_quiz = Quiz(name=quiz_name, questions=json.dumps(questions), owner_id=current_user.id)  # Set owner_id
+        db.session.add(new_quiz)
+        db.session.commit()
+        session.pop('questions', None) 
+        flash('Quiz saved successfully!')
+    else:
+        flash('No questions to save!')
+    return redirect(url_for('mkquiz'))
+   
+
+
+@app.route('/view_quizzes')
+@login_required
+def view_quizzes():
+       quizzes = Quiz.query.filter_by(owner_id=current_user.id).all()  # Filter by owner_id
+       return render_template('view_quiz.html', quizzes=quizzes)
+
+@app.route('/download_quiz/<int:quiz_id>') 
+@login_required
+def download_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = json.loads(quiz.questions) 
+
+    downloads_folder = os.path.join(app.root_path, 'downloads')
+    os.makedirs(downloads_folder, exist_ok=True)
+    file_path = os.path.join(downloads_folder, f'{quiz.name}.txt')
+    
+    with open(file_path, 'w') as f:  # Open in write mode ('w')
+        f.write(f"Quiz: {quiz.name}\n\n")
+        for i, question in enumerate(questions, 1):  # Start numbering from 1
+            f.write(f"Question {i}: {question['question']}\n")
+            if 'options' in question:
+                f.write("Options:\n" + "\n".join([f"- {option}" for option in question['options']]) + "\n")
+            f.write("\n")
+
+    return send_from_directory(downloads_folder, f'{quiz.name}.txt', as_attachment=True)
+    
 
 @app.route('/clear_session', methods=['POST'])
 def clear_session():
@@ -145,6 +210,12 @@ def customization():
 
     return render_template('customization.html')
 
+@app.route('/profile/<int:user_id>') #allows for clicking on someones profile to see their pic, description, and groups
+@login_required
+def profile(user_id):
+    user = User.query.get(user_id)
+    groups = StudyGroup.query.join(Member).filter(Member.user_id == user.id).all()
+    return render_template('profile.html', user=user, groups=groups)
 
 @app.route('/group_management')
 @login_required
@@ -159,11 +230,13 @@ def group_management():
 def create_group():
     form = CreateGroupForm()
     if form.validate_on_submit():
+        selected_flairs = ",".join(form.flairs.data)
         new_group = StudyGroup(
             name=form.name.data,
             description=form.description.data,
             owner_id=current_user.id,
-            public=form.public.data
+            public=form.public.data,
+            flairs=selected_flairs
         )
         db.session.add(new_group)
         db.session.commit()
@@ -179,6 +252,14 @@ def create_group():
 @app.route('/join_group', methods=['GET', 'POST'])
 @login_required
 def join_group():
+    search_query = request.args.get('search', '')
+    
+    public_groups = StudyGroup.query.filter( #case insensitive search, doesn't show groups user has joined already
+        StudyGroup.public == True,
+        StudyGroup.name.ilike(f'%{search_query}%'),
+        ~StudyGroup.members.any(Member.user_id == current_user.id)
+    ).all()
+    
     if request.method == 'POST':
         group_id = request.form.get('group_id')
         group = StudyGroup.query.get(group_id)

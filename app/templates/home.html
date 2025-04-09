@@ -3,6 +3,7 @@
 {% block page %}<h1>Home</h1>{% endblock %}
 {% block content %}
    <body>
+    <h2>Welcome {{ username }}</h2>
        <div class="feed">
            {% for message in messages %}
                <div class="message">{{ message }}</div>

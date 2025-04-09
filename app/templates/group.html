@@ -3,15 +3,43 @@
 {% block page %}<h1>Group Feed</h1>{% endblock %}
 {% block content %}
    <body>
-       <div class="feed">
-           {% for message in messages %}
-               <div class="message">{{ message.message }}</div>
-           {% endfor %}
-       </div>
+    <h2>{{ group.name }}</h2>
+        {{ group.description }}
+    <div class="feed">
+        {% for message in messages %}
+            <div class="message">
+                <a href="{{ url_for('profile', user_id=message.author.id) }}">
+                    <img src="{{ url_for('static', filename='profile_pics/' + message.author.picture) }}" alt="Profile Picture" class= profile-pic style="width: 50px; height: 50px;">
+                </a>
+                <strong>{{ message.author.username }}</strong>: {{ message.message }}
+                <p><small>{{ message.time.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+            </div>
+        {% endfor %}
+    </div>
        <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
         {{ form.hidden_tag() }}
         <input type="text" name="message" placeholder="Type your message here..." required>
         <button type="submit">Submit</button>
     </form>
    </body>
+   
+   {% if current_user.id == group.owner_id %}
+   <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
+       <h3 for="flairs">Select Flair</h3>
+       <select name="flairs" id="flairs" multiple>
+           <option value="">-- Select Flair --</option>
+           <option value="Remote">Remote</option>
+           <option value="In-Person">In-Person</option>
+           <option value="Note Sharing">Note Sharing</option>
+           <option value="Quizzes">Quizzes</option>
+           <option value="Math">Math</option>
+           <option value="Psychology">Psychology</option>
+           <option value="Computer Science">Computer Science</option>
+           <option value="Biology">Biology</option>
+           <option value="History">History</option>
+           <option value="Physics">Physics</option>
+       </select>
+       <button type="submit">Add Flair</button>
+   </form>
+{% endif %}
 {% endblock %}

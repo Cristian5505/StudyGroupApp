@@ -1,7 +1,7 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from flask_login import UserMixin, current_user
-from app import db
+from app import *
 
 def get_user(username):
     user = User.query.filter_by(username=username).first()
@@ -11,10 +11,10 @@ class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True, unique=True, nullable=False)
-    password = db.Column(db.String(64), index=True, nullable=False)
-    email = db.Column(db.String(64), index=True, unique=True, nullable=False)
+    password = db.Column(db.String(256), index=True, nullable=False)
+    email = db.Column(db.String(128), index=True, unique=True, nullable=False)
     admin = db.Column(db.Boolean, index=True, default=False) #site admin, different from group admin / mod
-    picture =db.Column(db.String(256), nullable=False, default = "/static/profile_pics/scsu.jpg") #path to their profile picture
+    picture =db.Column(db.String(256), nullable=False, default = "scsu.jpg") #path to their profile picture
     description = db.Column(db.String(256), default = "") #for their profile
 
     study_groups = db.relationship('StudyGroup', backref='owner', lazy=True) #one to many, user can create multiple study groups
@@ -55,6 +55,7 @@ class StudyGroup(db.Model):
     description = db.Column(db.Text, index=True, nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True, nullable=False)
     public = db.Column(db.Boolean, default=False) #public or private group
+    flairs = db.Column(db.String(256), nullable=True)
 
     members = db.relationship('Member', backref='group', lazy=True) #one to many, study group can have many members
     messages = db.relationship('Message', backref='group', lazy=True) #one to many, study group can have many messages
@@ -117,3 +118,11 @@ class Message(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('studygroup.id'), index=True, nullable=False)
     message = db.Column(db.Text, nullable=False)
     time = db.Column(db.DateTime, default=datetime.now)
+
+class Quiz(db.Model):
+    __tablename__ = 'quizzes'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    questions = db.Column(db.Text, nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
