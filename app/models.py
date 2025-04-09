@@ -1,7 +1,7 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from flask_login import UserMixin, current_user
-from app import db
+from app import *
 
 def get_user(username):
     user = User.query.filter_by(username=username).first()
@@ -11,8 +11,8 @@ class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True, unique=True, nullable=False)
-    password = db.Column(db.String(64), index=True, nullable=False)
-    email = db.Column(db.String(64), index=True, unique=True, nullable=False)
+    password = db.Column(db.String(256), index=True, nullable=False)
+    email = db.Column(db.String(128), index=True, unique=True, nullable=False)
     admin = db.Column(db.Boolean, index=True, default=False) #site admin, different from group admin / mod
     picture =db.Column(db.String(256), nullable=False, default = "scsu.jpg") #path to their profile picture
     description = db.Column(db.String(256), default = "") #for their profile
@@ -118,3 +118,11 @@ class Message(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('studygroup.id'), index=True, nullable=False)
     message = db.Column(db.Text, nullable=False)
     time = db.Column(db.DateTime, default=datetime.now)
+
+class Quiz(db.Model):
+    __tablename__ = 'quizzes'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    questions = db.Column(db.Text, nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
