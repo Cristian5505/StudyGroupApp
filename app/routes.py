@@ -107,9 +107,25 @@ def register_handler():
     new_user=User(username=username, email=email, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
-    error='Account created, Please Log in'
-    return redirect(url_for('login', error_message=error))
 
+    new_user.send_confirmation_email()
+    
+    flash('Account created! Please check your email to confirm your account.')
+    return redirect(url_for('login'))
+
+@app.route('/confirm_email/<token>')
+def confirm_email(token):
+    user = User.confirm_email_token(token)
+    if not user:
+        flash('The confirmation link is invalid or has expired.')
+        return redirect(url_for('login'))
+    if user.email_confirmed == True:
+        flash('This account has already been confirmed. Please log in.')
+    
+    user.email_confirmed = True
+    db.session.commit()
+    flash('Your email has been confirmed!')
+    return redirect(url_for('login'))
 
 @app.route('/login')
 def login():
@@ -122,12 +138,17 @@ def user_login():
     user=User.query.filter_by(username=username).first()
 
     if user and check_password_hash(user.password, inputted_password):
-        # Use Flask-Login to log the user in
-        login_user(user)
+        if user.email_confirmed != True:
+            flash('Please confirm email before logging in.', 'danger')
+            return redirect(url_for('login'))
 
-        # Flash a success message
-        flash('Login successful!')
-        return redirect(url_for('home'))
+        else:
+            # Use Flask-Login to log the user in
+            login_user(user)
+
+            # Flash a success message
+            flash('Login successful!')
+            return redirect(url_for('home'))
 
     # Flash an error message if login fails
     flash('Incorrect Username or Password')

@@ -4,11 +4,17 @@
 {% block content %}
     <div>
         <form method="POST" action="register_handler" style="display: flex; flex-direction: column; gap: 15px; width: 300px;">
-            <input type="text" name="email" placeholder="Email" required>
+            <input type="email" name="email" placeholder="Email" required>
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <input type="password" name="confirm_password" placeholder="Confirm Password" required>
             <button type="submit">Register</button>
         </form>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
+    <div>
+        <p>If you are already registered, please check your email for a confirmation link.</p>
     </div>
 {% endblock %}

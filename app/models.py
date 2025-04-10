@@ -1,7 +1,10 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from flask_login import UserMixin, current_user
-from app import db
+from app import db, mail
+from flask import current_app, url_for
+from itsdangerous import URLSafeTimedSerializer as Serializer
+from flask_mail import Message as MailMessage
 
 def get_user(username):
     user = User.query.filter_by(username=username).first()
@@ -13,6 +16,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(32), index=True, unique=True, nullable=False)
     password = db.Column(db.String(64), index=True, nullable=False)
     email = db.Column(db.String(64), index=True, unique=True, nullable=False)
+    email_confirmed = db.Column(db.Boolean, default=False)
     admin = db.Column(db.Boolean, index=True, default=False) #site admin, different from group admin / mod
     picture =db.Column(db.String(256), nullable=False, default = "scsu.jpg") #path to their profile picture
     description = db.Column(db.String(256), default = "") #for their profile
@@ -47,6 +51,31 @@ class User(db.Model, UserMixin):
     def update_description(self, newDescription):
         self.description = newDescription
         db.session.commit()
+
+    def generate_confirmation_token(self):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'confirm': self.id}, salt='email_confirm')
+    
+    @staticmethod
+    def confirm_email_token(token, expiration=3600):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token, salt='email_confirm', max_age=expiration)
+        except Exception:
+            return None
+        return User.query.get(data['confirm'])
+
+    def send_confirmation_email(self):
+        token = self.generate_confirmation_token()
+        confirm_url = url_for('confirm_email', token=token, _external=True)
+        msg = MailMessage(subject='Confirm Your Email', recipients=[self.email])
+        msg.body = f'Your confirmation link is: {confirm_url}'
+        try:
+            mail.send(msg)
+            print('Confirmation email sent to',self.email)
+            print(f'confirmation link: {confirm_url}')
+        except Exception as e:
+            print('Failed to send confirmation email:', e)
 
 class StudyGroup(db.Model):
     __tablename__='studygroup'
