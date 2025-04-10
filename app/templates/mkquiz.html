@@ -5,6 +5,10 @@
             <h2>Create Questions</h2>
             <form method="POST" action="/mkquiz"> 
                 <div class="mb-3">
+                    <label for="quizName" class="form-label">Quiz Name:</label>
+                    <input type="text" class="form-control" id="quizName" name="quizName" required>
+                </div>
+                <div class="mb-3">
                     <label for="mcQuestion" class="form-label">Multiple Choice Question</label>
                     <input type="text" class="form-control" id="mcQuestion" name="mcQuestion" placeholder="Enter your question">
                 </div>
@@ -16,10 +20,11 @@
                     <label for="openEndedQuestion" class="form-label">Open-Ended Question</label>
                     <input type="text" class="form-control" id="openEndedQuestion" name="openEndedQuestion" placeholder="Enter your question">
                 </div>
-                <button type="submit" class="btn btn-primary">Add Question</button> 
+                <button type="submit" class="btn btn-primary" name="action" value="save">Save Quiz</button> 
+                <button type="submit" class="btn btn-secondary" name="action" value="preview">Preview Quiz</button>
             </form>
             <form method="POST" action="/clear_session" style="display:inline;">
-                <button type="submit" class="btn btn-danger">Clear Session</button>
+                <button type="submit" class="btn btn-danger">Clear Preview</button>
             </form>
 
             <div class="preview">
@@ -38,6 +43,8 @@
             </div>
         </div>
     </div>
+    <a href="{{ url_for('view_quizzes') }}" class="btn btn-info" role="button">Saved Quizzes</a>
 {% endblock %}
+
 
 

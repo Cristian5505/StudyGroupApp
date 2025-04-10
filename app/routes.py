@@ -6,6 +6,10 @@ from flask_login import FlaskLoginClient, LoginManager, login_user, logout_user,
 from werkzeug.security import generate_password_hash, check_password_hash
 import sys
 from app import *
+from sqlalchemy import text 
+import json
+import os 
+from flask import send_from_directory
 
 @app.route('/')
 def home():
@@ -41,9 +45,17 @@ def group(group_id):
     messages = Message.query.filter_by(group_id=group.id).order_by(Message.time.desc()).all()
     return render_template('group.html', group=group, messages=messages, form=form)
 
+@app.route('/test_db')
+def test_db():
+    try:
+        result = db.session.execute(text("SELECT VERSION();")).fetchone()
+        return f"Database Connected! Version: {result[0]}"
+    except Exception as e:
+        return f"Database Connection Error: {e}" 
+     
 @app.route('/mkquiz', methods=['GET', 'POST'])
 def mkquiz():
-    if request.method == 'POST':
+    if request.method == 'POST': 
         mc_question = request.form.get('mcQuestion')
         mc_options = request.form.get('mcOptions')
         open_ended_question = request.form.get('openEndedQuestion')
@@ -61,11 +73,57 @@ def mkquiz():
                 'type': 'open_ended',
                 'question': open_ended_question
             })
-
+        
         session['questions'] = questions
-        return redirect(url_for('mkquiz'))
-
+        if 'action' in request.form: 
+               action = request.form['action']
+               if action == 'save' and request.form.get('quizName'):
+                   return redirect(url_for('save_quiz', quiz_name=request.form.get('quizName')))
+               
     return render_template('mkquiz.html', questions=session.get('questions', []))
+
+@app.route('/save_quiz/<quiz_name>', methods=['GET']) 
+@login_required
+def save_quiz(quiz_name):
+    questions = session.get('questions', [])
+    if questions:
+        new_quiz = Quiz(name=quiz_name, questions=json.dumps(questions), owner_id=current_user.id)  # Set owner_id
+        db.session.add(new_quiz)
+        db.session.commit()
+        session.pop('questions', None) 
+        flash('Quiz saved successfully!')
+    else:
+        flash('No questions to save!')
+    return redirect(url_for('mkquiz'))
+   
+
+
+@app.route('/view_quizzes')
+@login_required
+def view_quizzes():
+       quizzes = Quiz.query.filter_by(owner_id=current_user.id).all()  # Filter by owner_id
+       return render_template('view_quiz.html', quizzes=quizzes)
+
+@app.route('/download_quiz/<int:quiz_id>') 
+@login_required
+def download_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = json.loads(quiz.questions) 
+
+    downloads_folder = os.path.join(app.root_path, 'downloads')
+    os.makedirs(downloads_folder, exist_ok=True)
+    file_path = os.path.join(downloads_folder, f'{quiz.name}.txt')
+    
+    with open(file_path, 'w') as f:  # Open in write mode ('w')
+        f.write(f"Quiz: {quiz.name}\n\n")
+        for i, question in enumerate(questions, 1):  # Start numbering from 1
+            f.write(f"Question {i}: {question['question']}\n")
+            if 'options' in question:
+                f.write("Options:\n" + "\n".join([f"- {option}" for option in question['options']]) + "\n")
+            f.write("\n")
+
+    return send_from_directory(downloads_folder, f'{quiz.name}.txt', as_attachment=True)
+    
 
 @app.route('/clear_session', methods=['POST'])
 def clear_session():
@@ -107,25 +165,9 @@ def register_handler():
     new_user=User(username=username, email=email, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
+    error='Account created, Please Log in'
+    return redirect(url_for('login', error_message=error))
 
-    new_user.send_confirmation_email()
-    
-    flash('Account created! Please check your email to confirm your account.')
-    return redirect(url_for('login'))
-
-@app.route('/confirm_email/<token>')
-def confirm_email(token):
-    user = User.confirm_email_token(token)
-    if not user:
-        flash('The confirmation link is invalid or has expired.')
-        return redirect(url_for('login'))
-    if user.email_confirmed == True:
-        flash('This account has already been confirmed. Please log in.')
-    
-    user.email_confirmed = True
-    db.session.commit()
-    flash('Your email has been confirmed!')
-    return redirect(url_for('login'))
 
 @app.route('/login')
 def login():
@@ -138,17 +180,12 @@ def user_login():
     user=User.query.filter_by(username=username).first()
 
     if user and check_password_hash(user.password, inputted_password):
-        if user.email_confirmed != True:
-            flash('Please confirm email before logging in.', 'danger')
-            return redirect(url_for('login'))
+        # Use Flask-Login to log the user in
+        login_user(user)
 
-        else:
-            # Use Flask-Login to log the user in
-            login_user(user)
-
-            # Flash a success message
-            flash('Login successful!')
-            return redirect(url_for('home'))
+        # Flash a success message
+        flash('Login successful!')
+        return redirect(url_for('home'))
 
     # Flash an error message if login fails
     flash('Incorrect Username or Password')
