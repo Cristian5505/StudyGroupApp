@@ -1,4 +1,5 @@
 from flask import Flask
+from sqlalchemy import or_
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv

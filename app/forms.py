@@ -19,6 +19,31 @@ class CreateGroupForm(FlaskForm):
     description = TextAreaField('Description', validators=[DataRequired()])
     public = BooleanField('Public Group')
     flairs = SelectMultipleField('Select Flairs', choices=[
+            ('Remote', 'Remote'),
+            ('In-Person', 'In-Person'),
+            ('Note Sharing', 'Note Sharing'),
+            ('Quizzes', 'Quizzes'),
+            ('Math', 'Math'),
+            ('Psychology', 'Psychology'),
+            ('Computer Science', 'Computer Science'),
+            ('Biology', 'Biology'),
+            ('History', 'History'),
+            ('Physics', 'Physics')
+        ],
+        option_widget=CheckboxInput(),
+        widget=ListWidget(prefix_label=False)
+    )
+    
+class InviteForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    submit = SubmitField('Invite')
+
+class MessageForm(FlaskForm):
+    message = StringField('Message', validators=[DataRequired()])
+    submit = SubmitField('Send')
+
+class UpdateFlairsForm(FlaskForm):
+    flairs = SelectMultipleField('Select Flairs', choices=[
         ('Remote', 'Remote'),
         ('In-Person', 'In-Person'),
         ('Note Sharing', 'Note Sharing'),
@@ -29,13 +54,5 @@ class CreateGroupForm(FlaskForm):
         ('Biology', 'Biology'),
         ('History', 'History'),
         ('Physics', 'Physics')
-    ])
-    submit = SubmitField('Create Group')
-    
-class InviteForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    submit = SubmitField('Invite')
-
-class MessageForm(FlaskForm):
-    message = StringField('Message', validators=[DataRequired()])
-    submit = SubmitField('Send')
+    ], coerce=str)
+    submit = SubmitField('Update Flairs')

@@ -4,7 +4,16 @@
 {% block content %}
    <body>
     <h2>{{ group.name }}</h2>
-        {{ group.description }}
+{% if group.flairs %}
+    <div><b>Flairs:</b>
+        {% for flair in group.flairs.split(',') %}
+            <span class="flair">{{ flair.strip() }}</span>
+        {% endfor %}
+    </div>
+{% endif %}
+
+    <div><b>Description: </b>    {{ group.description }} </div>
+    
     <div class="feed">
         {% for message in messages %}
             <div class="message">
@@ -25,21 +34,32 @@
    
    {% if current_user.id == group.owner_id %}
    <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
-       <h3 for="flairs">Select Flair</h3>
-       <select name="flairs" id="flairs" multiple>
-           <option value="">-- Select Flair --</option>
-           <option value="Remote">Remote</option>
-           <option value="In-Person">In-Person</option>
-           <option value="Note Sharing">Note Sharing</option>
-           <option value="Quizzes">Quizzes</option>
-           <option value="Math">Math</option>
-           <option value="Psychology">Psychology</option>
-           <option value="Computer Science">Computer Science</option>
-           <option value="Biology">Biology</option>
-           <option value="History">History</option>
-           <option value="Physics">Physics</option>
-       </select>
-       <button type="submit">Add Flair</button>
+    
+    Select Flairs
+       
+    <div>
+           <label><input type="checkbox" name="flairs" value="Remote"
+               {% if 'Remote' in group.flairs %}checked{% endif %}> Remote</label><br>
+           <label><input type="checkbox" name="flairs" value="In-Person"
+               {% if 'In-Person' in group.flairs %}checked{% endif %}> In-Person</label><br>
+           <label><input type="checkbox" name="flairs" value="Note Sharing"
+               {% if 'Note Sharing' in group.flairs %}checked{% endif %}> Note Sharing</label><br>
+           <label><input type="checkbox" name="flairs" value="Quizzes"
+               {% if 'Quizzes' in group.flairs %}checked{% endif %}> Quizzes</label><br>
+           <label><input type="checkbox" name="flairs" value="Math"
+               {% if 'Math' in group.flairs %}checked{% endif %}> Math</label><br>
+           <label><input type="checkbox" name="flairs" value="Psychology"
+               {% if 'Psychology' in group.flairs %}checked{% endif %}> Psychology</label><br>
+           <label><input type="checkbox" name="flairs" value="Computer Science"
+               {% if 'Computer Science' in group.flairs %}checked{% endif %}> Computer Science</label><br>
+           <label><input type="checkbox" name="flairs" value="Biology"
+               {% if 'Biology' in group.flairs %}checked{% endif %}> Biology</label><br>
+           <label><input type="checkbox" name="flairs" value="History"
+               {% if 'History' in group.flairs %}checked{% endif %}> History</label><br>
+           <label><input type="checkbox" name="flairs" value="Physics"
+               {% if 'Physics' in group.flairs %}checked{% endif %}> Physics</label><br>
+       </div>
+       <button type="submit">Change Flairs</button>
    </form>
-{% endif %}
+   {% endif %}
 {% endblock %}

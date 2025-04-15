@@ -19,22 +19,10 @@
     </div>
     
     <div>
-        <label for="flairs">Select Flair</label><br>
-        <select name="flairs" id="flairs">
-            <option value="">-- Select Flair --</option>
-            <option value="Remote">Remote</option>
-            <option value="In-Person">In-Person</option>
-            <option value="Note Sharing">Note Sharing</option>
-            <option value="Quizzes">Quizzes</option>
-            <option value="Math">Math</option>
-            <option value="Psychology">Psychology</option>
-            <option value="Computer Science">Computer Science</option>
-            <option value="Biology">Biology</option>
-            <option value="History">History</option>
-            <option value="Physics">Physics</option>
-        </select>
+        Select Flairs
+        {{ form.flairs() }}
     </div>
-
+    
     <div>
         <button type="submit">Create Group</button>
     </div>

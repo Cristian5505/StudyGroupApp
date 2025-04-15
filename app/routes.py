@@ -1,4 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, flash, session, request
+from sqlalchemy import or_
 from app.forms import *
 from app.models import *
 from app import db
@@ -6,6 +7,7 @@ from flask_login import FlaskLoginClient, LoginManager, login_user, logout_user,
 from werkzeug.security import generate_password_hash, check_password_hash
 import sys
 from app import *
+
 
 @app.route('/')
 def home():
@@ -33,10 +35,11 @@ def group(group_id):
         flash('Message sent!')
         return redirect(url_for('group', group_id=group.id))
     
-    selected_flairs = request.form.getlist('flairs')
-    if selected_flairs:
+    elif request.form.getlist('flairs'):
+        selected_flairs = request.form.getlist('flairs')
         group.flairs = ','.join(selected_flairs)
         db.session.commit()
+        return redirect(url_for('group', group_id=group.id))
 
     messages = Message.query.filter_by(group_id=group.id).order_by(Message.time.desc()).all()
     return render_template('group.html', group=group, messages=messages, form=form)
@@ -215,14 +218,22 @@ def create_group():
 @app.route('/join_group', methods=['GET', 'POST'])
 @login_required
 def join_group():
-    search_query = request.args.get('search', '')
-    
-    public_groups = StudyGroup.query.filter( #case insensitive search, doesn't show groups user has joined already
+    search_query = request.args.get('search', '').strip()
+    #case insensitive search, doesn't show groups user has joined already and flairs and descriptions may be searched
+    base_query = StudyGroup.query.filter(
         StudyGroup.public == True,
-        StudyGroup.name.ilike(f'%{search_query}%'),
         ~StudyGroup.members.any(Member.user_id == current_user.id)
-    ).all()
-    
+    )
+    if search_query:
+        base_query = base_query.filter(
+            or_(
+                StudyGroup.name.ilike(f'%{search_query}%'),
+                StudyGroup.description.ilike(f'%{search_query}%'),
+                StudyGroup.flairs.ilike(f'%{search_query}%')
+            )
+        )
+    public_groups = base_query.all()
+
     if request.method == 'POST':
         group_id = request.form.get('group_id')
         group = StudyGroup.query.get(group_id)
@@ -235,10 +246,6 @@ def join_group():
         else:
             flash('This group is private and cannot be joined without an invitation.')
             return redirect(url_for('join_group'))
-    public_groups = StudyGroup.query.filter(
-        StudyGroup.public == True,
-        ~StudyGroup.members.any(Member.user_id == current_user.id)
-    ).all()
     return render_template('join_group.html', public_groups=public_groups)
 
 from flask import redirect, url_for, flash
