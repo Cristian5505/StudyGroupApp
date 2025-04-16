@@ -5,6 +5,7 @@ from app.models import *
 from app import db
 from flask_login import FlaskLoginClient, LoginManager, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import sys
 from app import *
 from sqlalchemy import text 
@@ -12,6 +13,15 @@ import json
 import os 
 from flask import send_from_directory
 
+
+
+UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'txt', 'docx', 'gif', 'mp4', 'mp3'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def home():
@@ -98,8 +108,6 @@ def save_quiz(quiz_name):
     else:
         flash('No questions to save!')
     return redirect(url_for('mkquiz'))
-   
-
 
 @app.route('/view_quizzes')
 @login_required
@@ -127,15 +135,42 @@ def download_quiz(quiz_id):
 
     return send_from_directory(downloads_folder, f'{quiz.name}.txt', as_attachment=True)
     
-
 @app.route('/clear_session', methods=['POST'])
 def clear_session():
     session.pop('questions', None)
     return redirect(url_for('mkquiz'))
 
-@app.route('/notes')
+@app.route('/notes', methods=['GET', 'POST'])
+@login_required
 def notes():
-    return render_template('notes.html')
+    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id))
+    os.makedirs(user_folder, exist_ok=True)
+
+    if request.method == 'POST':
+        if 'file' in request.files:
+            file = request.files['file']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(user_folder, filename))
+                flash('File uploaded successfully!')
+                return redirect(url_for('notes'))
+
+        if 'content' in request.form:
+            text_content = request.form.get('content')
+            filename = secure_filename(request.form.get('filename', 'new_file.txt'))
+            with open(os.path.join(user_folder, filename), 'w') as f:
+                f.write(text_content)
+            flash('Text file created successfully!')
+            return redirect(url_for('notes'))
+
+    files = os.listdir(user_folder)
+    return render_template('notes.html', files=files)
+    
+@app.route('/download_file/<filename>')
+@login_required
+def download_file(filename):
+    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id))
+    return send_from_directory(user_folder, filename, as_attachment=True)
 
 @app.route('/register')
 def register():
@@ -306,9 +341,79 @@ def join_group():
             return redirect(url_for('join_group'))
     return render_template('join_group.html', public_groups=public_groups)
 
-from flask import redirect, url_for, flash
-from app import db
-from app.models import *
+#Group Administrative Controls
+@app.route('/group/<int:group_id>/mute/<int:user_id>', methods=['POST'])
+@login_required
+def mute_user(group_id, user_id):
+    group = StudyGroup.query.get_or_404(group_id)
+    if group.owner_id != current_user.id:
+        flash('You do not have permission to mute users.')
+        return redirect(url_for('group', group_id=group_id))
+
+    #mute logic (e.g., store mute duration in the database)
+    flash('User has been muted.')
+    return redirect(url_for('group', group_id=group_id))
+
+@app.route('/group/<int:group_id>/kick/<int:user_id>', methods=['POST'])
+@login_required
+def kick_user(group_id, user_id):
+    group = StudyGroup.query.get_or_404(group_id)
+    if group.owner_id != current_user.id:
+        flash('You do not have permission to kick users.')
+        return redirect(url_for('group', group_id=group_id))
+
+    #Remove the user from the group
+    Member.query.filter_by(user_id=user_id, group_id=group_id).delete()
+    db.session.commit()
+    flash('User has been kicked from the group.')
+    return redirect(url_for('group', group_id=group_id))
+
+@app.route('/group/<int:group_id>/ban/<int:user_id>', methods=['POST'])
+@login_required
+def ban_user(group_id, user_id):
+    group = StudyGroup.query.get_or_404(group_id)
+    if group.owner_id != current_user.id:
+        flash('You do not have permission to ban users.')
+        return redirect(url_for('group', group_id=group_id))
+
+    #Add the user to a banned list
+    flash('User has been banned from the group.')
+    return redirect(url_for('group', group_id=group_id))
+
+#Group File Uploading
+@app.route('/group/<int:group_id>/upload', methods=['POST'])
+@login_required
+def upload_to_group(group_id):
+    group = StudyGroup.query.get_or_404(group_id)
+    membership = Member.query.filter_by(user_id=current_user.id, group_id=group_id).first()
+    if not membership:
+        flash('You are not a member of this group.')
+        return redirect(url_for('group', group_id=group_id))
+
+    filename = request.form.get('filename')
+    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id))
+    file_path = os.path.join(user_folder, filename)
+
+    if not os.path.exists(file_path):
+        flash('File does not exist.')
+        return redirect(url_for('group', group_id=group_id))
+
+    group_folder = os.path.join(app.config['UPLOAD_FOLDER'], f'group_{group_id}')
+    os.makedirs(group_folder, exist_ok=True)
+    new_file_path = os.path.join(group_folder, filename)
+    with open(file_path, 'rb') as src, open(new_file_path, 'wb') as dest:
+        dest.write(src.read())
+    new_message = Message(
+        user_id=current_user.id,
+        group_id=group_id,
+        message=f"Uploaded file: {filename}",
+        file_path=new_file_path
+    )
+    db.session.add(new_message)
+    db.session.commit()
+
+    flash('File uploaded to group successfully!')
+    return redirect(url_for('group', group_id=group_id))
 
 #Temp route for testing purposes. Delete in final release.
 @app.route('/reset_db')

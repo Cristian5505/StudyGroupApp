@@ -2,15 +2,31 @@
 {% block title %}Notes{% endblock %}
 {% block page %}<h1>Notes</h1>{% endblock %}
 {% block content %}
-   <body>
-       <div class="feed">
-           {% for message in messages %}
-               <div class="message">{{ message }}</div>
-           {% endfor %}
-       </div>
-       <form method="POST" action="/submit">
-           <input type="text" name="message" placeholder="Type your message here..." required>
-           <button type="submit">Submit</button>
-       </form>
-   </body>
+<h1> Notes </h1>
+
+<!-- This is where Files will be uploaded-->
+<form method="POST" enctype="multipart/form-data">
+    <label for ="file">Upload a file:</label>
+    <input type="file" name="file" id="file" required>
+    <button type="submit">Upload</button>
+</form>
+
+<!-- Create text files here, we can remove this feature if we feel it's bloat-->
+<form method="POST">
+    <label for="text">Create a text file:</label>
+    <input type="text" name="filename" id="filename" placeholder="Enter filename" required>
+    <textarea name="content" id="content" rows="4" cols="50" placeholder="Enter your text here..." required></textarea>
+    <button type="submit">Create</button>
+</form>
+
+<!-- Display for user's uploaded files-->
+<h2> Your Uploaded Files </h2>
+<ul>
+    {% for file in files %}
+        <li>
+            <a href="{{ url_for('download_file', filename=file) }}">{{ file }}</a>
+        </li>
+    {% endfor %}
+</ul>
+
 {% endblock %}
