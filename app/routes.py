@@ -221,6 +221,8 @@ def notes():
         if 'content' in request.form:
             text_content = request.form.get('content')
             filename = secure_filename(request.form.get('filename', 'new_file.txt'))
+            if not filename.lower().endswith('.txt'):
+                filename += '.txt'
             with open(os.path.join(user_folder, filename), 'w') as f:
                 f.write(text_content)
             flash('Text file created successfully!', 'success')
@@ -491,3 +493,9 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
+
+@app.before_request
+def update_last_active():
+    if current_user.is_authenticated:
+        current_user.last_active = datetime.now()
+        db.session.commit()

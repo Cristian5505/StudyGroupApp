@@ -14,6 +14,57 @@
 
     <div><b>Description: </b>    {{ group.description }} </div>
     
+    <!--This is the dropdown to view group members-->
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="memberDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            View Members
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="memberDropdown">
+            {% for member in group.get_members() %}
+                <li class="dropdown-item">
+                    <div style="display: flex; align-items: center;">
+                        <!-- Profile Picture Here-->
+                        <img src="{{ member.picture or url_for('static', filename='profile_pics/default_profile.jpg') }}" 
+                             alt="Profile Picture" 
+                             style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+
+                        <!-- Username -->
+                        <a href="{{ url_for('profile', user_id=member.id) }}" style="flex-grow: 1;">
+                            {{ member.username }}
+                        </a>
+
+                        <!-- Activity Status -->
+                        <span class="status-indicator {{ 'active' if member.is_active else 'inactive' }}" style="width: 10px; height: 10px; border-radius: 50%; margin-left: 10px;">
+                        </span>
+
+                        <!-- Owner Controls -->
+                        {% if group.owner_id == current_user.id %}
+                            <button class="btn btn-sm btn-primary" onclick="openOwnerMenu('ownerMenu{{ member.id }}')">Actions</button>
+                            <div id="ownerMenu{{ member.id }}" class="menu" style="display: none; margin-top: 10px;">
+                                <form method="POST" action="{{ url_for('mute_user', group_id=group.id, user_id=member.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-primary">Mute</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('kick_user', group_id=group.id, user_id=member.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-warning">Kick</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('ban_user', group_id=group.id, user_id=member.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">Ban</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        function openOwnerMenu(menuId) {
+            const menu = document.getElementById(menuId);
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+    </script>
+
     <div class="feed">
         {% for message in messages %}
             <div class="message">
