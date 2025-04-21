@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ quiz.name }}</h2>
+
+<form method="POST">
+    {% for i, question in enumerate(questions) %}
+        <h3>Question {{ i + 1 }}: {{ question.question }}</h3>
+        {% if question.type == 'mc' %}
+            <div class="form-check">
+                {% for j, option in enumerate(question.options) %}
+                    <input class="form-check-input" type="radio" name="question_{{ i }}" id="question_{{ i }}_{{ j }}" value="{{ j }}" required>
+                    <label class="form-check-label" for="question_{{ i }}_{{ j }}">
+                        {{ option }}
+                    </label><br>
+                {% endfor %}
+            </div>
+        {% elif question.type == 'open_ended' %}
+            <textarea class="form-control" name="question_{{ i }}" rows="3"></textarea>
+        {% endif %}
+        <hr>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Submit Quiz</button>
+</form>
+{% endblock %}
+

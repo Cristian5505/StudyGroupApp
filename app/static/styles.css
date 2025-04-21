@@ -19,6 +19,31 @@ body {
     min-height: 140vh;
 }
 
+
+.button-link {
+    display: inline-block;
+    padding: 8px 16px; 
+    font-size: 16px; 
+    text-decoration: none; 
+    border: 2px solid #007bff; 
+    border-radius: 5px;     
+    color: #007bff;    
+    background-color: transparent; 
+    transition: all 0.3s ease; 
+}
+
+.button-link.success {
+    border-color: #a72828; 
+    color: #00ffff; 
+}
+
+
+
+.button-link.primary {
+    border-color: #0011ff;
+    color: #00ffff;
+}
+
 .page-container::before {
     content: "";
     position: absolute;

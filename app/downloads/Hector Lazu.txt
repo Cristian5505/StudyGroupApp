@@ -1,0 +1,12 @@
+Quiz: Hector Lazu
+
+Question 1: animal?
+Options:
+- fish
+-  dog
+-  cat
+-  none
+Correct Answer: B
+
+Question 2: hello?
+

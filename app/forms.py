@@ -70,5 +70,5 @@ class SaveQuizForm(FlaskForm):
     quizName = StringField('Quiz Name', validators=[DataRequired()])
     save_quiz = SubmitField('Save Quiz')
 
-class ClearPreviewForm(FlaskForm): # This is a form, so we need to create a class for it
+class ClearPreviewForm(FlaskForm):
     clear_preview = SubmitField('Clear Preview')

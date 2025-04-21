@@ -1,0 +1,21 @@
+Quiz: look
+
+Question 1: work?
+- 1
+- 2
+- 4 (Correct)
+
+Question 2: mult tipp
+- 1
+- 2
+- 3 (Correct)
+- 4
+
+Question 3: can u work?
+- 1
+- 2
+- 3 (Correct)
+- 4
+
+Question 4: work now?
+

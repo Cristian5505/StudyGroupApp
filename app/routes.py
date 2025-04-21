@@ -76,7 +76,7 @@ def mkquiz():
         if add_question_form.add_question.data:
             questions = session.get('questions', [])
             if add_question_form.mcQuestion.data: 
-                # Only process mcOptions and correctOption if mcQuestion is filled
+                
                 if not add_question_form.mcOptions.data or len(add_question_form.mcOptions.data.split(',')) < 2:
                     flash('Please provide at least two options for your multiple-choice question.', 'error')
                     return redirect(url_for('mkquiz'))
@@ -95,19 +95,19 @@ def mkquiz():
                     'options': [option.strip() for option in add_question_form.mcOptions.data.split(',')],
                     'correct': int(add_question_form.correctOption.data) - 1
                 })
-            # Always add the open-ended question if it's filled, even if mcQuestion is empty
+     
             if add_question_form.openEndedQuestion.data:  
                 questions.append({
                     'type': 'open_ended',
                     'question': add_question_form.openEndedQuestion.data
                 })
             session['questions'] = questions
-            return redirect(url_for('mkquiz'))   # Redirect to refresh and clear the form
+            return redirect(url_for('mkquiz')) 
 
         elif save_quiz_form.save_quiz.data and save_quiz_form.validate():
             return redirect(url_for('save_quiz', quiz_name=save_quiz_form.quizName.data))
 
-        elif clear_preview_form.clear_preview.data:  # Check if the form was submitted
+        elif clear_preview_form.clear_preview.data: 
             session.pop('questions', None)
             flash('Preview cleared!', 'success')
             return redirect(url_for('mkquiz'))
@@ -124,7 +124,7 @@ def mkquiz():
 def save_quiz(quiz_name):
     questions = session.get('questions', [])
     if questions:
-        new_quiz = Quiz(name=quiz_name, questions=json.dumps(questions), owner_id=current_user.id)  # Set owner_id
+        new_quiz = Quiz(name=quiz_name, questions=json.dumps(questions), owner_id=current_user.id) 
         db.session.add(new_quiz)
         db.session.commit()
         session.pop('questions', None) 
@@ -136,7 +136,7 @@ def save_quiz(quiz_name):
 @app.route('/view_quizzes')
 @login_required
 def view_quizzes():
-       quizzes = Quiz.query.filter_by(owner_id=current_user.id).all()  # Filter by owner_id
+       quizzes = Quiz.query.filter_by(owner_id=current_user.id).all() 
        return render_template('view_quiz.html', quizzes=quizzes)
 
 
@@ -150,9 +150,9 @@ def download_quiz(quiz_id):
     os.makedirs(downloads_folder, exist_ok=True)
     file_path = os.path.join(downloads_folder, f'{quiz.name}.txt')
     
-    with open(file_path, 'w') as f:  # Open in write mode ('w')
+    with open(file_path, 'w') as f: 
         f.write(f"Quiz: {quiz.name}\n\n")
-        for i, question in enumerate(questions, 1):  # Start numbering from 1
+        for i, question in enumerate(questions, 1):  
             f.write(f"Question {i}: {question['question']}\n")
             if 'options' in question:
                 for j, option in enumerate(question['options']):
@@ -169,7 +169,7 @@ def take_quiz(quiz_id):
     questions = json.loads(quiz.questions)
 
     if request.method == 'POST':
-        # Get user's answers from the form
+        
         user_answers = {}
         for i, question in enumerate(questions):
             if question['type'] == 'mc':
@@ -177,16 +177,16 @@ def take_quiz(quiz_id):
                 try:
                     answer = int(answer)
                 except (ValueError, TypeError):
-                    answer = None  # Handle invalid input
+                    answer = None  
                 user_answers[i] = answer
 
-        # Check if all multiple-choice questions are answered
+       
         all_answered = all(i in user_answers for i, q in enumerate(questions) if q['type'] == 'mc')
 
         if not all_answered:
             flash('Please answer all multiple-choice questions before submitting.', 'error')
         else:
-            # Grade the quiz
+          
             score = 0
             for i, question in enumerate(questions):
                 if question['type'] == 'mc' and user_answers.get(i) == question.get('correct'):

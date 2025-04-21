@@ -1,14 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>Saved Quizzes</h2>
-    <ul>
+
+<h1>Saved Quizzes</h1>
+
+<ul class="list-group"> 
     {% for quiz in quizzes %}
-        <li>
-            {{ quiz.name }} 
-            <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-primary">Take Quiz</a>
-            <a href="{{ url_for('download_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-secondary">Download</a>
+        <li class="list-group-item">
+            {{ quiz.name }}
+            <div class="button-group"> 
+                <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="button-link success">Take Quiz</a> 
+                <a href="{{ url_for('download_quiz', quiz_id=quiz.id) }}" class="button-link primary">Download</a> 
+            </div>
         </li>
     {% endfor %}
-    </ul>
-    <a href="{{ url_for('mkquiz') }}" class="btn btn-info" role="button">Quiz Creator</a>
+</ul>
+
+<a href="{{ url_for('mkquiz') }}" class="button-link primary">Quiz Creator</a>
+
 {% endblock %}
