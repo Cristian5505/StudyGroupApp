@@ -6,26 +6,39 @@
     <link rel="stylesheet" type="text/css" href="../static/styles.css">
 </head>   
 <body>
-    <div class="header">
-        <div class="tabs">
-            <a class="tab" href="/">Home</a>
-            <a class="tab" href="/notes">Notes</a>
-            <a class="tab" href="/mkquiz">Quiz Create</a>
-            <a class="tab" href="/group_management">Group Management</a>
-            <a class="tab" href="/customization">Customization</a>
-            <a class="tab" href="{% if current_user.is_authenticated %}{{ url_for('logout') }}{% else %}{{ url_for('login') }}{% endif %}">
-                {% if current_user.is_authenticated %}Log out{% else %}Login{% endif %}
-            </a>
+    <div class="page-container">
+        <div class="header">
+            <div class="tabs">
+                <a class="tab" href="/">Home</a>
+                <a class="tab" href="/notes">Notes</a>
+                <a class="tab" href="/mkquiz">Quiz Create</a>
+                <a class="tab" href="/group_management">Group Management</a>
+                <a class="tab" href="/customization">Customization</a>
+                <a class="tab" href="{% if current_user.is_authenticated %}{{ url_for('logout') }}{% else %}{{ url_for('login') }}{% endif %}">
+                    {% if current_user.is_authenticated %}Log out{% else %}Login{% endif %}
+                </a>
+            </div>
+
+            <div class="profile-pic-container">
+                <img src="{{ url_for('static', filename='profile_pics/' + (current_user.picture if current_user.is_authenticated else 'scsu.jpg')) }}" 
+                    width="80px" height="80px" class="profile-pic" alt="Profile Picture">
+            </div>        
         </div>
-
-        <div class="profile-pic-container">
-            <img src="{{ url_for('static', filename='profile_pics/' + (current_user.picture if current_user.is_authenticated else 'scsu.jpg')) }}" 
-                 width="80px" height="80px" class="profile-pic" alt="Profile Picture">
-        </div>        
-    </div>
-
-    <div class="main">
-        {% block content %}{% endblock %}
+        <div id="flash-message">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-message-container">
+                        {% for category, message in messages %}
+                         <div class="flash-message {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+        <div class="main">
+            {% block content %}{% endblock %}
+        </div>
+        
     </div>
 </body>
 </html>

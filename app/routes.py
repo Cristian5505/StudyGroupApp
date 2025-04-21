@@ -37,7 +37,7 @@ def group(group_id):
     group = StudyGroup.query.get_or_404(group_id)
     membership = Member.query.filter_by(user_id=current_user.id, group_id=group_id).first()
     if not membership:
-        flash('You are not a member of this group.')
+        flash('You are not a member of this group.', 'info')
         return redirect(url_for('home'))
 
     form = MessageForm()
@@ -46,7 +46,7 @@ def group(group_id):
         new_message = Message(user_id=current_user.id, group_id=group.id, message=message_text)
         db.session.add(new_message)
         db.session.commit()
-        flash('Message sent!')
+        flash('Message sent!', 'success')
         return redirect(url_for('group', group_id=group.id))
     
     elif request.form.getlist('flairs'):
@@ -104,9 +104,9 @@ def save_quiz(quiz_name):
         db.session.add(new_quiz)
         db.session.commit()
         session.pop('questions', None) 
-        flash('Quiz saved successfully!')
+        flash('Quiz saved successfully!', 'success')
     else:
-        flash('No questions to save!')
+        flash('No questions to save!', 'info')
     return redirect(url_for('mkquiz'))
 
 @app.route('/view_quizzes')
@@ -152,7 +152,7 @@ def notes():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(user_folder, filename))
-                flash('File uploaded successfully!')
+                flash('File uploaded successfully!', 'success')
                 return redirect(url_for('notes'))
 
         if 'content' in request.form:
@@ -160,7 +160,7 @@ def notes():
             filename = secure_filename(request.form.get('filename', 'new_file.txt'))
             with open(os.path.join(user_folder, filename), 'w') as f:
                 f.write(text_content)
-            flash('Text file created successfully!')
+            flash('Text file created successfully!', 'success')
             return redirect(url_for('notes'))
 
     files = os.listdir(user_folder)
@@ -206,21 +206,21 @@ def register_handler():
 
     new_user.send_confirmation_email()
     
-    flash('Account created! Please check your email to confirm your account.')
+    flash('Account created! Please check your email to confirm your account.', 'info')
     return redirect(url_for('login'))
 
 @app.route('/confirm_email/<token>')
 def confirm_email(token):
     user = User.confirm_email_token(token)
     if not user:
-        flash('The confirmation link is invalid or has expired.')
+        flash('The confirmation link is invalid or has expired.', 'info')
         return redirect(url_for('login'))
     if user.email_confirmed == True:
-        flash('This account has already been confirmed. Please log in.')
+        flash('This account has already been confirmed. Please log in.', 'info')
     
     user.email_confirmed = True
     db.session.commit()
-    flash('Your email has been confirmed!')
+    flash('Your email has been confirmed!', 'success')
     return redirect(url_for('login'))
 
 @app.route('/login')
@@ -235,7 +235,7 @@ def user_login():
 
     if user and check_password_hash(user.password, inputted_password):
         if user.email_confirmed != True:
-            flash('Please confirm email before logging in.', 'danger')
+            flash('Please confirm email before logging in.', 'warning')
             return redirect(url_for('login'))
 
         else:
@@ -243,11 +243,11 @@ def user_login():
             login_user(user)
 
             # Flash a success message
-            flash('Login successful!')
+            flash('Login successful!', 'success')
             return redirect(url_for('home'))
 
     # Flash an error message if login fails
-    flash('Incorrect Username or Password')
+    flash('Incorrect Username or Password', 'warning')
     return redirect(url_for('login'))
 
 @app.route('/customization', methods=['GET', 'POST'])
@@ -264,7 +264,7 @@ def customization():
             current_user.description = new_description
 
         db.session.commit()
-        flash('Profile updated.')
+        flash('Profile updated.', 'success')
         return redirect(url_for('customization'))
 
     return render_template('customization.html')
@@ -304,7 +304,7 @@ def create_group():
         db.session.add(new_member)
         db.session.commit()
 
-        flash('Group created successfully!')
+        flash('Group created successfully!', 'success')
         return redirect(url_for('group_management'))
     return render_template('create_group.html', form=form)
 
@@ -334,10 +334,10 @@ def join_group():
             new_member = Member(user_id=current_user.id, group_id=group.id)
             db.session.add(new_member)
             db.session.commit()
-            flash('You have joined the group!')
+            flash('You have joined the group!', 'success')
             return redirect(url_for('group_management'))
         else:
-            flash('This group is private and cannot be joined without an invitation.')
+            flash('This group is private and cannot be joined without an invitation.', 'info')
             return redirect(url_for('join_group'))
     return render_template('join_group.html', public_groups=public_groups)
 
@@ -347,11 +347,11 @@ def join_group():
 def mute_user(group_id, user_id):
     group = StudyGroup.query.get_or_404(group_id)
     if group.owner_id != current_user.id:
-        flash('You do not have permission to mute users.')
+        flash('You do not have permission to mute users.', 'info')
         return redirect(url_for('group', group_id=group_id))
 
     #mute logic (e.g., store mute duration in the database)
-    flash('User has been muted.')
+    flash('User has been muted.', 'info')
     return redirect(url_for('group', group_id=group_id))
 
 @app.route('/group/<int:group_id>/kick/<int:user_id>', methods=['POST'])
@@ -359,13 +359,13 @@ def mute_user(group_id, user_id):
 def kick_user(group_id, user_id):
     group = StudyGroup.query.get_or_404(group_id)
     if group.owner_id != current_user.id:
-        flash('You do not have permission to kick users.')
+        flash('You do not have permission to kick users.', 'info')
         return redirect(url_for('group', group_id=group_id))
 
     #Remove the user from the group
     Member.query.filter_by(user_id=user_id, group_id=group_id).delete()
     db.session.commit()
-    flash('User has been kicked from the group.')
+    flash('User has been kicked from the group.', 'info')
     return redirect(url_for('group', group_id=group_id))
 
 @app.route('/group/<int:group_id>/ban/<int:user_id>', methods=['POST'])
@@ -373,11 +373,11 @@ def kick_user(group_id, user_id):
 def ban_user(group_id, user_id):
     group = StudyGroup.query.get_or_404(group_id)
     if group.owner_id != current_user.id:
-        flash('You do not have permission to ban users.')
+        flash('You do not have permission to ban users.', 'info')
         return redirect(url_for('group', group_id=group_id))
 
     #Add the user to a banned list
-    flash('User has been banned from the group.')
+    flash('User has been banned from the group.', 'info')
     return redirect(url_for('group', group_id=group_id))
 
 #Group File Uploading
@@ -387,7 +387,7 @@ def upload_to_group(group_id):
     group = StudyGroup.query.get_or_404(group_id)
     membership = Member.query.filter_by(user_id=current_user.id, group_id=group_id).first()
     if not membership:
-        flash('You are not a member of this group.')
+        flash('You are not a member of this group.', 'info')
         return redirect(url_for('group', group_id=group_id))
 
     filename = request.form.get('filename')
@@ -395,7 +395,7 @@ def upload_to_group(group_id):
     file_path = os.path.join(user_folder, filename)
 
     if not os.path.exists(file_path):
-        flash('File does not exist.')
+        flash('File does not exist.', 'info')
         return redirect(url_for('group', group_id=group_id))
 
     group_folder = os.path.join(app.config['UPLOAD_FOLDER'], f'group_{group_id}')
@@ -412,7 +412,7 @@ def upload_to_group(group_id):
     db.session.add(new_message)
     db.session.commit()
 
-    flash('File uploaded to group successfully!')
+    flash('File uploaded to group successfully!', 'success')
     return redirect(url_for('group', group_id=group_id))
 
 #Temp route for testing purposes. Delete in final release.
@@ -420,11 +420,11 @@ def upload_to_group(group_id):
 def reset_db():
     db.drop_all()
     db.create_all()
-    flash("Database has been reset!")
+    flash("Database has been reset!", 'success')
     return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():
     logout_user()
-    flash('You have been logged out.')
+    flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
