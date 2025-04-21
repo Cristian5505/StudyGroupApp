@@ -3,7 +3,11 @@
     <h2>Saved Quizzes</h2>
     <ul>
     {% for quiz in quizzes %}
-        <li><a href="{{ url_for('download_quiz', quiz_id=quiz.id) }}">{{ quiz.name }}</a></li>
+        <li>
+            {{ quiz.name }} 
+            <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-primary">Take Quiz</a>
+            <a href="{{ url_for('download_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-secondary">Download</a>
+        </li>
     {% endfor %}
     </ul>
     <a href="{{ url_for('mkquiz') }}" class="btn btn-info" role="button">Quiz Creator</a>

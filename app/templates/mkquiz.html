@@ -1,49 +1,81 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="tab-content">
-        <div class="tab-pane fade show active" id="tab1">
-            <h2>Create Questions</h2>
-            <form method="POST" action="/mkquiz"> 
-                <div class="mb-3">
-                    <label for="quizName" class="form-label">Quiz Name:</label>
-                    <input type="text" class="form-control" id="quizName" name="quizName" required>
-                </div>
-                <div class="mb-3">
-                    <label for="mcQuestion" class="form-label">Multiple Choice Question</label>
-                    <input type="text" class="form-control" id="mcQuestion" name="mcQuestion" placeholder="Enter your question">
-                </div>
-                <div class="mb-3">
-                    <label for="mcOptions" class="form-label">Options (comma separated)</label>
-                    <input type="text" class="form-control" id="mcOptions" name="mcOptions" placeholder="Option1, Option2, Option3">
-                </div>
-                <div class="mb-3">
-                    <label for="openEndedQuestion" class="form-label">Open-Ended Question</label>
-                    <input type="text" class="form-control" id="openEndedQuestion" name="openEndedQuestion" placeholder="Enter your question">
-                </div>
-                <button type="submit" class="btn btn-primary" name="action" value="save">Save Quiz</button> 
-                <button type="submit" class="btn btn-secondary" name="action" value="preview">Preview Quiz</button>
-            </form>
-            <form method="POST" action="/clear_session" style="display:inline;">
-                <button type="submit" class="btn btn-danger">Clear Preview</button>
-            </form>
 
-            <div class="preview">
-                <h3>Preview Quiz</h3>
-                <div id="quizPreview">
-                    {% for question in questions %}
-                        {% if question['type'] == 'mc' %}
-                            <strong>Multiple Choice:</strong> {{ question['question'] }} <br>
-                            <strong>Options:</strong> {{ question['options'] | join(', ') }} <br> 
-                        {% elif question['type'] == 'open_ended' %}
-                            <strong>Open Ended:</strong> {{ question['question'] }} <br>
-                        {% endif %}
-                        <hr>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+<h2>Create Questions</h2>
+
+<form method="POST" action="{{ url_for('mkquiz') }}">
+    {{ save_quiz_form.hidden_tag() }}
+    <div>
+        {{ save_quiz_form.quizName.label }}
+        {{ save_quiz_form.quizName }}
     </div>
-    <a href="{{ url_for('view_quizzes') }}" class="btn btn-info" role="button">Saved Quizzes</a>
+    <div>
+        {{ save_quiz_form.save_quiz }}
+    </div>
+</form>
+
+<form method="POST" action="{{ url_for('mkquiz') }}"> 
+    {{ add_question_form.hidden_tag() }} 
+    <h3>Multiple Choice Question</h3> 
+    <div> 
+        {{ add_question_form.mcQuestion.label }} 
+        {{ add_question_form.mcQuestion }} 
+    </div> 
+    <div> 
+        {{ add_question_form.mcOptions.label }} 
+        {{ add_question_form.mcOptions }} 
+    </div> 
+    <div> 
+        {{ add_question_form.correctOption.label }} 
+        {{ add_question_form.correctOption }} 
+        <small class="form-text text-muted">(Enter the option number starting from 1)</small>
+    </div> 
+    
+    <h3>Open-Ended Question</h3> 
+    <div> 
+        {{ add_question_form.openEndedQuestion.label }} 
+        {{ add_question_form.openEndedQuestion }} 
+    </div> 
+    
+    <div> 
+        {{ add_question_form.add_question }} 
+    </div> 
+</form> 
+
+
+<form method="POST" action="{{ url_for('mkquiz') }}"> 
+    {{ clear_preview_form.hidden_tag() }}
+    <div>
+        {{ clear_preview_form.clear_preview }} 
+    </div> 
+</form> 
+
+<div class="preview">
+    <h3>Preview Quiz</h3>
+    <div id="quizPreview">
+        {% for question in questions %}
+            {% if question['type'] == 'mc' %}
+                <strong>Multiple Choice:</strong> {{ question['question'] }} <br>
+                <strong>Options:</strong> 
+                <ul>
+                {% for i, option in enumerate(question['options']) %}
+                    <li>{{ option }} 
+                    {% if 'correct' in question and i == question['correct'] %} 
+                        (Correct)
+                    {% endif %}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% elif question['type'] == 'open_ended' %}
+                <strong>Open Ended:</strong> {{ question['question'] }} <br>
+            {% endif %}
+            <hr>
+        {% endfor %}
+    </div>
+</div>
+
+<a href="{{ url_for('view_quizzes') }}" class="btn btn-primary">Saved Quizzes</a>
+
 {% endblock %}
 
 

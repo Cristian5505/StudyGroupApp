@@ -56,3 +56,19 @@ class UpdateFlairsForm(FlaskForm):
         ('Physics', 'Physics')
     ], coerce=str)
     submit = SubmitField('Update Flairs')
+
+
+class AddQuestionForm(FlaskForm):
+    mcQuestion = TextAreaField('Multiple Choice Question')
+    mcOptions = StringField('Options (comma-separated)')
+    correctOption = IntegerField('Correct Option Index')
+    openEndedQuestion = TextAreaField('Open-Ended Question')
+    add_question = SubmitField('Add Question')
+
+
+class SaveQuizForm(FlaskForm):
+    quizName = StringField('Quiz Name', validators=[DataRequired()])
+    save_quiz = SubmitField('Save Quiz')
+
+class ClearPreviewForm(FlaskForm): # This is a form, so we need to create a class for it
+    clear_preview = SubmitField('Clear Preview')

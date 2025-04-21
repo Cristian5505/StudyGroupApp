@@ -68,32 +68,56 @@ def test_db():
      
 @app.route('/mkquiz', methods=['GET', 'POST'])
 def mkquiz():
-    if request.method == 'POST': 
-        mc_question = request.form.get('mcQuestion')
-        mc_options = request.form.get('mcOptions')
-        open_ended_question = request.form.get('openEndedQuestion')
+    add_question_form = AddQuestionForm()
+    save_quiz_form = SaveQuizForm()
+    clear_preview_form = ClearPreviewForm() 
 
-        questions = session.get('questions', [])
+    if request.method == 'POST':
+        if add_question_form.add_question.data:
+            questions = session.get('questions', [])
+            if add_question_form.mcQuestion.data: 
+                # Only process mcOptions and correctOption if mcQuestion is filled
+                if not add_question_form.mcOptions.data or len(add_question_form.mcOptions.data.split(',')) < 2:
+                    flash('Please provide at least two options for your multiple-choice question.', 'error')
+                    return redirect(url_for('mkquiz'))
+                try:
+                    correct_option = int(add_question_form.correctOption.data)
+                    if correct_option < 0 or correct_option >= len(add_question_form.mcOptions.data.split(',')):
+                        flash('Invalid correct option selected.', 'error')
+                        return redirect(url_for('mkquiz'))
+                except ValueError:
+                    flash('Invalid correct option selected.', 'error')
+                    return redirect(url_for('mkquiz'))
 
-        if mc_question:
-            questions.append({
-                'type': 'mc',
-                'question': mc_question,
-                'options': mc_options.split(',')
-            })
-        if open_ended_question:
-            questions.append({
-                'type': 'open_ended',
-                'question': open_ended_question
-            })
-        
-        session['questions'] = questions
-        if 'action' in request.form: 
-               action = request.form['action']
-               if action == 'save' and request.form.get('quizName'):
-                   return redirect(url_for('save_quiz', quiz_name=request.form.get('quizName')))
-               
-    return render_template('mkquiz.html', questions=session.get('questions', []))
+                questions.append({
+                    'type': 'mc',
+                    'question': add_question_form.mcQuestion.data,
+                    'options': [option.strip() for option in add_question_form.mcOptions.data.split(',')],
+                    'correct': int(add_question_form.correctOption.data) - 1
+                })
+            # Always add the open-ended question if it's filled, even if mcQuestion is empty
+            if add_question_form.openEndedQuestion.data:  
+                questions.append({
+                    'type': 'open_ended',
+                    'question': add_question_form.openEndedQuestion.data
+                })
+            session['questions'] = questions
+            return redirect(url_for('mkquiz'))   # Redirect to refresh and clear the form
+
+        elif save_quiz_form.save_quiz.data and save_quiz_form.validate():
+            return redirect(url_for('save_quiz', quiz_name=save_quiz_form.quizName.data))
+
+        elif clear_preview_form.clear_preview.data:  # Check if the form was submitted
+            session.pop('questions', None)
+            flash('Preview cleared!', 'success')
+            return redirect(url_for('mkquiz'))
+
+    return render_template('mkquiz.html', 
+                           add_question_form=add_question_form, 
+                           save_quiz_form=save_quiz_form,
+                           clear_preview_form = clear_preview_form,
+                           questions=session.get('questions', []), 
+                           enumerate=enumerate)
 
 @app.route('/save_quiz/<quiz_name>', methods=['GET']) 
 @login_required
@@ -115,6 +139,7 @@ def view_quizzes():
        quizzes = Quiz.query.filter_by(owner_id=current_user.id).all()  # Filter by owner_id
        return render_template('view_quiz.html', quizzes=quizzes)
 
+
 @app.route('/download_quiz/<int:quiz_id>') 
 @login_required
 def download_quiz(quiz_id):
@@ -130,11 +155,49 @@ def download_quiz(quiz_id):
         for i, question in enumerate(questions, 1):  # Start numbering from 1
             f.write(f"Question {i}: {question['question']}\n")
             if 'options' in question:
-                f.write("Options:\n" + "\n".join([f"- {option}" for option in question['options']]) + "\n")
+                for j, option in enumerate(question['options']):
+                    correct_marker = ' (Correct)' if 'correct' in question and j == question['correct'] else ''
+                    f.write(f"- {option}{correct_marker}\n")
             f.write("\n")
 
     return send_from_directory(downloads_folder, f'{quiz.name}.txt', as_attachment=True)
     
+@app.route('/take_quiz/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
+def take_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = json.loads(quiz.questions)
+
+    if request.method == 'POST':
+        # Get user's answers from the form
+        user_answers = {}
+        for i, question in enumerate(questions):
+            if question['type'] == 'mc':
+                answer = request.form.get(f'question_{i}')
+                try:
+                    answer = int(answer)
+                except (ValueError, TypeError):
+                    answer = None  # Handle invalid input
+                user_answers[i] = answer
+
+        # Check if all multiple-choice questions are answered
+        all_answered = all(i in user_answers for i, q in enumerate(questions) if q['type'] == 'mc')
+
+        if not all_answered:
+            flash('Please answer all multiple-choice questions before submitting.', 'error')
+        else:
+            # Grade the quiz
+            score = 0
+            for i, question in enumerate(questions):
+                if question['type'] == 'mc' and user_answers.get(i) == question.get('correct'):
+                    score += 1
+
+            return render_template('quiz_results.html', quiz=quiz, questions=questions, user_answers=user_answers,
+                                   score=score, enumerate=enumerate)
+
+    return render_template('take_quiz.html', quiz=quiz, questions=questions, enumerate=enumerate)
+
+
 @app.route('/clear_session', methods=['POST'])
 def clear_session():
     session.pop('questions', None)
