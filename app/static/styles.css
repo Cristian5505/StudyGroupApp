@@ -115,7 +115,7 @@ body {
     justify-content: center; 
     align-items: center;   
     padding: 40px;
-    background-color: #b0b2b1;
+    background-color: #bdf0ff;
     border-bottom: 1px solid #ccc;
     position: relative;
     z-index: 2;
@@ -129,8 +129,8 @@ body {
 }
 
 .profile-pic {
-    width: 80px;
-    height: 80px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgb(122, 119, 119);
@@ -186,6 +186,9 @@ ul {
     list-style-type: none;
 }
 
+li {
+    padding: 20px
+}
 #flash-messages {
     position: fixed;
     bottom: 20px;
@@ -241,4 +244,8 @@ ul {
 
 .flash-message.info {
     background-color: blue;
+}
+
+titles {
+    font-size: 34;
 }
