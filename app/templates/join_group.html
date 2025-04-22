@@ -22,6 +22,7 @@
                         {% endfor %}
                     </div>
                 {% endif %}
+                <div><b>{{ group.members | length }}</b> members</div>
                 <form method="POST" action="{{ url_for('join_group') }}">
                     <input type="hidden" name="group_id" value="{{ group.id }}">
                     <button type="submit">Join Group</button>
