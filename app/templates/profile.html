@@ -15,4 +15,24 @@
             {% endfor %}
         </ul>
 
+    <!-- Display groups the current user is in but the profile user is not -->
+{% if current_user.study_groups %}
+<h3>Invite {{ user.username }} to Your Groups</h3>
+<ul>
+    {% for group in current_user.study_groups %}
+        {% if user not in group.members %}
+            <li>
+                {{ group.name }}
+                <form method="POST" action="{{ url_for('invite_user', group_id=group.id, user_id=user.id) }}">
+                    {{ form.hidden_tag() }}
+                    {{ form.submit(class="btn btn-primary") }}
+                </form>
+            </li>
+        {% endif %}
+    {% endfor %}
+</ul>
+{% else %}
+<p>You are not in any groups.</p>
+{% endif %}
+
 {% endblock %}

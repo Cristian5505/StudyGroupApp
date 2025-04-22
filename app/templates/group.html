@@ -19,67 +19,119 @@
         <button class="btn btn-secondary dropdown-toggle" type="button" id="memberDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             View Members
         </button>
-        <ul class="dropdown-menu" aria-labelledby="memberDropdown">
-            {% for member in group.get_members() %}
-                <li class="dropdown-item">
-                    <div style="display: flex; align-items: center;">
-                        <!-- Profile Picture Here-->
-                        <img src="{{ member.picture or url_for('static', filename='profile_pics/default_profile.jpg') }}" 
-                             alt="Profile Picture" 
-                             style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-
-                        <!-- Username -->
-                        <a href="{{ url_for('profile', user_id=member.id) }}" style="flex-grow: 1;">
-                            {{ member.username }}
-                        </a>
-
-                        <!-- Activity Status -->
-                        <span class="status-indicator {{ 'active' if member.is_active else 'inactive' }}" style="width: 10px; height: 10px; border-radius: 50%; margin-left: 10px;">
-                        </span>
-
-                        <!-- Owner Controls -->
-                        {% if group.owner_id == current_user.id %}
-                            <button class="btn btn-sm btn-primary" onclick="openOwnerMenu('ownerMenu{{ member.id }}')">Actions</button>
-                            <div id="ownerMenu{{ member.id }}" class="menu" style="display: none; margin-top: 10px;">
-                                <form method="POST" action="{{ url_for('mute_user', group_id=group.id, user_id=member.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-primary">Mute</button>
-                                </form>
-                                <form method="POST" action="{{ url_for('kick_user', group_id=group.id, user_id=member.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-warning">Kick</button>
-                                </form>
-                                <form method="POST" action="{{ url_for('ban_user', group_id=group.id, user_id=member.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-danger">Ban</button>
-                                </form>
-                            </div>
-                        {% endif %}
-                    </div>
-                </li>
+        <ul class="dropdown-menu" aria-labelledby="memberDropdown" style="max-height: 200px; overflow-y: auto; background-color: white; z-index: 1050; position: absolute;"">
+            {% for user in group.get_members() %}
+            <li class="dropdown-item" style="position: relative;">
+                <div class="member-item" style="display: flex; align-items: center; padding: 10px; cursor: pointer;" 
+                     onmouseover="this.style.backgroundColor='rgba(0, 0, 0, 0.1)'" 
+                     onmouseout="this.style.backgroundColor='transparent'" 
+                     {% if current_user.id == group.owner_id %} onclick="openMemberActions('{{ user.id }}')" {%endif %}>
+                     <img src="{{ url_for('static', filename='profile_pics/' + user.picture) }}" 
+     alt="Profile Picture" 
+     style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                         {% if current_user.id == group.owner_id %}
+                         <!-- If the current user is the owner, disable the profile link -->
+                         <span style="flex-grow: 1; text-decoration: none; color: black;">
+                             {{ user.username }}
+                         </span>
+                     {% else %}
+                         <!-- If the current user is not the owner, allow the profile link -->
+                         <a href="{{ url_for('profile', user_id=user.id) }}" style="flex-grow: 1; text-decoration: none; color: black;">
+                             {{ user.username }}
+                         </a>
+                     {% endif %}
+                    <span class="status-indicator {% if user.is_active() %}active{% else %}inactive{% endif %}"></span>
+                </div>
+            </li>
             {% endfor %}
         </ul>
     </div>
 
+    <!-- Modal for Member Actions -->
+    <div id="memberActionsModal" class="modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+        <h4>Member Actions</h4>
+        <form method="POST" action="{{ url_for('mute_user', group_id=group.id, user_id=0) }}" id="muteForm">
+            <label for="muteDuration">Mute Duration (minutes):</label>
+            <input type="number" id="muteDuration" name="duration" min="1" required>
+            <button type="submit" class="btn btn-primary">Mute</button>
+        </form>
+        <form method="POST" action="{{ url_for('kick_user', group_id=group.id, user_id=0) }}" id="kickForm">
+            <button type="submit" class="btn btn-warning">Kick</button>
+        </form>
+        <form method="POST" action="{{ url_for('ban_user', group_id=group.id, user_id=0) }}" id="banForm">
+            <button type="submit" class="btn btn-danger">Ban</button>
+        </form>
+    <!-- View Profile Button -->
+    <a href="#" id="viewProfileLink" class="btn btn-info" style="margin-top: 10px;">View Profile</a>
+    <button class="btn btn-secondary" onclick="closeMemberActions()">Close</button>
+</div>
+
     <script>
-        function openOwnerMenu(menuId) {
-            const menu = document.getElementById(menuId);
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        // Open the modal and set the user ID for the forms
+        function openMemberActions(id) {
+            if (!id) {
+                alert("Invalid user ID");
+                return;
+            }
+        
+            const modal = document.getElementById('memberActionsModal');
+            modal.style.display = 'block';
+        
+            // Dynamically replace the user_id in the form actions
+            document.getElementById('muteForm').action = "{{ url_for('mute_user', group_id=group.id, user_id=0) }}".replace('0', id);
+            document.getElementById('kickForm').action = "{{ url_for('kick_user', group_id=group.id, user_id=0) }}".replace('0', id);
+            document.getElementById('banForm').action = "{{ url_for('ban_user', group_id=group.id, user_id=0) }}".replace('0', id);
+        
+                // Set the "View Profile" link
+            const viewProfileLink = document.getElementById('viewProfileLink');
+            viewProfileLink.href = "{{ url_for('profile', user_id=0) }}".replace('0', id);
+            }
+
+        // Close the modal
+        function closeMemberActions() {
+            const modal = document.getElementById('memberActionsModal');
+            modal.style.display = 'none';
         }
     </script>
-
-    <div class="feed">
+    <div class="feed" style="background-color: white; padding: 10px; border-radius: 5px;">
         {% for message in messages %}
-            <div class="message">
-                <a href="{{ url_for('profile', user_id=message.author.id) }}">
-                    <img src="{{ url_for('static', filename='profile_pics/' + message.author.picture) }}" alt="Profile Picture" class= profile-pic style="width: 50px; height: 50px;">
-                </a>
-                <strong>{{ message.author.username }}</strong>: {{ message.message }}
-                <p><small>{{ message.time.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
-            </div>
+        <div class="message" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+            <a href="{{ url_for('profile', user_id=message.author.id) }}">
+                <img src="{{ url_for('static', filename='profile_pics/' + message.author.picture) }}" 
+                     alt="Profile Picture" 
+                     class="profile-pic" 
+                     style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;">
+            </a>
+            <strong>{{ message.author.username }}</strong>: {{ message.message }}
+            <p><small>{{ message.time.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+        </div>
         {% endfor %}
+        <!-- Display uploaded files -->
+        {% for file in group.uploaded_files %}
+        <div class="message" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+            <a href="{{ url_for('profile', user_id=file.uploader.id) }}">
+                <img src="{{ url_for('static', filename='profile_pics/' + file.uploader.picture) }}" 
+                     alt="Profile Picture" 
+                     class="profile-pic" 
+                     style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;">
+            </a>
+            <strong>{{ file.uploader.username }}</strong> uploaded:
+            <a href="{{ url_for('static', filename='uploads/' + file.filename) }}" download>
+                {{ file.filename }}
+            </a>
+            <p><small>{{ file.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+        </div>
+        {% endfor %}
+
     </div>
        <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
         {{ form.hidden_tag() }}
         <input type="text" name="message" placeholder="Type your message here..." required>
         <button type="submit">Submit</button>
+    </form>
+    <form method="POST" action="{{ url_for('upload_file', group_id=group.id) }}" enctype="multipart/form-data">
+        <input type="file" name="file" required>
+        <button type="submit" class="btn btn-primary">Upload File</button>
     </form>
    </body>
    

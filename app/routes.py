@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, session, request
+from flask import Flask, render_template, redirect, url_for, flash, session, request, abort
 from sqlalchemy import or_
 from app.forms import *
 from app.models import *
@@ -39,6 +39,12 @@ def group(group_id):
     if not membership:
         flash('You are not a member of this group.', 'info')
         return redirect(url_for('home'))
+
+    muted_user = MutedUser.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+
+    if muted_user and (muted_user.mute_until is None or muted_user.mute_until > datetime.utcnow()):
+        flash('You are muted and cannot send messages.', 'danger')
+        return redirect(url_for('group', group_id=group_id))
 
     form = MessageForm()
     if form.validate_on_submit():
@@ -392,6 +398,12 @@ def join_group():
         )
     public_groups = base_query.all()
 
+    banned_user = BannedUser.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+
+    if banned_user:
+        flash('You are banned from this group.', 'danger')
+        return redirect(url_for('index'))
+
     if request.method == 'POST':
         group_id = request.form.get('group_id')
         group = StudyGroup.query.get(group_id)
@@ -411,12 +423,16 @@ def join_group():
 @login_required
 def mute_user(group_id, user_id):
     group = StudyGroup.query.get_or_404(group_id)
-    if group.owner_id != current_user.id:
-        flash('You do not have permission to mute users.', 'info')
-        return redirect(url_for('group', group_id=group_id))
+    if current_user.id != group.owner_id:
+        abort(403)  # Only the group owner can mute users
 
-    #mute logic (e.g., store mute duration in the database)
-    flash('User has been muted.', 'info')
+    duration = int(request.form.get('duration', 0))
+    mute_until = datetime.utcnow() + timedelta(minutes=duration)
+
+    muted_user = MutedUser(group_id=group_id, user_id=user_id, mute_until=mute_until)
+    db.session.add(muted_user)
+    db.session.commit()
+    flash('User has been muted.', 'success')
     return redirect(url_for('group', group_id=group_id))
 
 @app.route('/group/<int:group_id>/kick/<int:user_id>', methods=['POST'])
@@ -437,48 +453,74 @@ def kick_user(group_id, user_id):
 @login_required
 def ban_user(group_id, user_id):
     group = StudyGroup.query.get_or_404(group_id)
-    if group.owner_id != current_user.id:
-        flash('You do not have permission to ban users.', 'info')
-        return redirect(url_for('group', group_id=group_id))
+    if current_user.id != group.owner_id:
+        abort(403)  # Only the group owner can ban users
 
-    #Add the user to a banned list
-    flash('User has been banned from the group.', 'info')
+    banned_user = BannedUser(group_id=group_id, user_id=user_id)
+    db.session.add(banned_user)
+    db.session.commit()
+    flash('User has been banned.', 'success')
     return redirect(url_for('group', group_id=group_id))
 
 #Group File Uploading
-@app.route('/group/<int:group_id>/upload', methods=['POST'])
-@login_required
-def upload_to_group(group_id):
+@app.route('/upload_file/<int:group_id>', methods=['POST'])
+def upload_file(group_id):
     group = StudyGroup.query.get_or_404(group_id)
-    membership = Member.query.filter_by(user_id=current_user.id, group_id=group_id).first()
-    if not membership:
-        flash('You are not a member of this group.', 'info')
+
+    # Ensure the user is a member of the group
+    if current_user not in group.members:
+        flash('You are not a member of this group.', 'danger')
         return redirect(url_for('group', group_id=group_id))
 
-    filename = request.form.get('filename')
-    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id))
-    file_path = os.path.join(user_folder, filename)
-
-    if not os.path.exists(file_path):
-        flash('File does not exist.', 'info')
+    # Check if the post request has the file part
+    if 'file' not in request.files:
+        flash('No file part.', 'danger')
         return redirect(url_for('group', group_id=group_id))
 
-    group_folder = os.path.join(app.config['UPLOAD_FOLDER'], f'group_{group_id}')
-    os.makedirs(group_folder, exist_ok=True)
-    new_file_path = os.path.join(group_folder, filename)
-    with open(file_path, 'rb') as src, open(new_file_path, 'wb') as dest:
-        dest.write(src.read())
-    new_message = Message(
-        user_id=current_user.id,
-        group_id=group_id,
-        message=f"Uploaded file: {filename}",
-        file_path=new_file_path
-    )
-    db.session.add(new_message)
+    file = request.files['file']
+    if file.filename == '':
+        flash('No selected file.', 'danger')
+        return redirect(url_for('group', group_id=group_id))
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        # Save the file as a message in the database
+        message = Message(
+            content=f"Uploaded file: {filename}",
+            author=current_user,
+            group_id=group_id,
+            file_path=filename
+        )
+        db.session.add(message)
+        db.session.commit()
+
+        flash('File uploaded successfully.', 'success')
+        return redirect(url_for('group', group_id=group_id))
+
+@app.route('/invite_user/<int:group_id>/<int:user_id>', methods=['POST'])
+@login_required
+def invite_user(group_id, user_id):
+    group = StudyGroup.query.get_or_404(group_id)
+    user = User.query.get_or_404(user_id)
+
+    # Ensure the current user is a member of the group
+    if current_user not in group.members:
+        flash('You must be a member of the group to invite others.', 'danger')
+        return redirect(url_for('profile', user_id=user_id))
+
+    # Ensure the invited user is not already in the group
+    if user in group.members:
+        flash('This user is already a member of the group.', 'warning')
+        return redirect(url_for('profile', user_id=user_id))
+
+    # Add the user to the group
+    group.members.append(user)
     db.session.commit()
 
-    flash('File uploaded to group successfully!', 'success')
-    return redirect(url_for('group', group_id=group_id))
+    flash(f'{user.username} has been invited to the group.', 'success')
+    return redirect(url_for('profile', user_id=user_id))
 
 #Temp route for testing purposes. Delete in final release.
 @app.route('/reset_db')
@@ -498,4 +540,5 @@ def logout():
 def update_last_active():
     if current_user.is_authenticated:
         current_user.last_active = datetime.now()
+        print("User is authenticated, updating last active time.")
         db.session.commit()

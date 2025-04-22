@@ -242,3 +242,19 @@ ul {
 .flash-message.info {
     background-color: blue;
 }
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.status-indicator.active {
+    background-color: green;
+}
+
+.status-indicator.inactive {
+    background-color: gray;
+}
