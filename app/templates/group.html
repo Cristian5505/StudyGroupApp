@@ -2,7 +2,7 @@
 {% block title %}Groups{% endblock %}
 {% block page %}<h1>Group Feed</h1>{% endblock %}
 {% block content %}
-   <body>
+   <body data-group-id="{{ group.id }}">
     <h2>{{ group.name }}</h2>
 {% if group.flairs %}
     <div><b>Flairs:</b>
@@ -19,27 +19,27 @@
         <button class="btn btn-secondary dropdown-toggle" type="button" id="memberDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             View Members
         </button>
-        <ul class="dropdown-menu" aria-labelledby="memberDropdown" style="max-height: 200px; overflow-y: auto; background-color: white; z-index: 1050; position: absolute;"">
+        <ul class="dropdown-menu" aria-labelledby="memberDropdown" style="max-height: 200px; overflow-y: auto; background-color: white; z-index: 1050; position: absolute;">
             {% for user in group.get_members() %}
             <li class="dropdown-item" style="position: relative;">
                 <div class="member-item" style="display: flex; align-items: center; padding: 10px; cursor: pointer;" 
-                     onmouseover="this.style.backgroundColor='rgba(0, 0, 0, 0.1)'" 
-                     onmouseout="this.style.backgroundColor='transparent'" 
-                     {% if current_user.id == group.owner_id %} onclick="openMemberActions('{{ user.id }}')" {%endif %}>
-                     <img src="{{ url_for('static', filename='profile_pics/' + user.picture) }}" 
-     alt="Profile Picture" 
-     style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                         {% if current_user.id == group.owner_id %}
-                         <!-- If the current user is the owner, disable the profile link -->
-                         <span style="flex-grow: 1; text-decoration: none; color: black;">
-                             {{ user.username }}
-                         </span>
-                     {% else %}
-                         <!-- If the current user is not the owner, allow the profile link -->
-                         <a href="{{ url_for('profile', user_id=user.id) }}" style="flex-grow: 1; text-decoration: none; color: black;">
-                             {{ user.username }}
-                         </a>
-                     {% endif %}
+                    onmouseover="this.style.backgroundColor='rgba(0, 0, 0, 0.1)'" 
+                    onmouseout="this.style.backgroundColor='transparent'" 
+                    {% if current_user.id == group.owner_id %} onclick="openMemberActions('{{ user.id }}')" {% endif %}>
+                    <img src="{{ url_for('static', filename='profile_pics/' + user.picture) }}" 
+                        alt="Profile Picture" 
+                        style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                    {% if current_user.id == group.owner_id %}
+                    <!-- If the current user is the owner, disable the profile link -->
+                    <span style="flex-grow: 1; text-decoration: none; color: black;">
+                        {{ user.username }}
+                    </span>
+                    {% else %}
+                    <!-- If the current user is not the owner, allow the profile link -->
+                    <a href="{{ url_for('profile', user_id=user.id) }}" style="flex-grow: 1; text-decoration: none; color: black;">
+                        {{ user.username }}
+                    </a>
+                    {% endif %}
                     <span class="status-indicator {% if user.is_active() %}active{% else %}inactive{% endif %}"></span>
                 </div>
             </li>
@@ -50,15 +50,15 @@
     <!-- Modal for Member Actions -->
     <div id="memberActionsModal" class="modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
         <h4>Member Actions</h4>
-        <form method="POST" action="{{ url_for('mute_user', group_id=group.id, user_id=user_id) }}" id="muteForm">
+        <form method="POST" action="{{ url_for('mute_user', group_id=group.id, user_id=0) }}" id="muteForm">
             <label for="muteDuration">Mute Duration (minutes):</label>
             <input type="number" id="muteDuration" name="duration" min="1" required>
             <button type="submit" class="btn btn-primary">Mute</button>
         </form>
-        <form method="POST" action="{{ url_for('kick_user', group_id=group.id, user_id=user_id) }}" id="kickForm">
+        <form method="POST" action="{{ url_for('kick_user', group_id=group.id, user_id=0) }}" id="kickForm">
             <button type="submit" class="btn btn-warning">Kick</button>
         </form>
-        <form method="POST" action="{{ url_for('ban_user', group_id=group.id, user_id=user_id) }}" id="banForm">
+        <form method="POST" action="{{ url_for('ban_user', group_id=group.id, user_id=0) }}" id="banForm">
             <button type="submit" class="btn btn-danger">Ban</button>
         </form>
     <!-- View Profile Button -->
@@ -69,23 +69,34 @@
     <script>
         // Open the modal and set the user ID for the forms
         function openMemberActions(id) {
+            console.log("Opening Member Actions for User ID:", id); // Debugging
+
             if (!id) {
                 alert("Invalid user ID");
                 return;
             }
-        
+
+            // Retrieve the group ID dynamically from the data attribute
+            const groupId = document.body.getAttribute('data-group-id');
+            console.log("Group ID (from data attribute):", groupId); // Debugging
+
             const modal = document.getElementById('memberActionsModal');
             modal.style.display = 'block';
-        
+
             // Dynamically replace the user_id in the form actions
-            document.getElementById('muteForm').action = "{{ url_for('mute_user', group_id=group.id, user_id=0) }}".replace('0', id);
-            document.getElementById('kickForm').action = "{{ url_for('kick_user', group_id=group.id, user_id=0) }}".replace('0', id);
-            document.getElementById('banForm').action = "{{ url_for('ban_user', group_id=group.id, user_id=0) }}".replace('0', id);
-        
-                // Set the "View Profile" link
-            const viewProfileLink = document.getElementById('viewProfileLink');
-            viewProfileLink.href = "{{ url_for('profile', user_id=0) }}".replace('0', id);
-            }
+            const muteForm = document.getElementById('muteForm');
+            const kickForm = document.getElementById('kickForm');
+            const banForm = document.getElementById('banForm');
+
+            muteForm.action = `/group/${groupId}/mute/${id}`;
+            kickForm.action = `/group/${groupId}/kick/${id}`;
+            banForm.action = `/group/${groupId}/ban/${id}`;
+
+            console.log("Mute Form Action:", muteForm.action);
+            console.log("Kick Form Action:", kickForm.action);
+            console.log("Ban Form Action:", banForm.action);
+        }
+
 
         // Close the modal
         function closeMemberActions() {

@@ -35,6 +35,7 @@ def home():
 @login_required
 def group(group_id):
     group = StudyGroup.query.get_or_404(group_id)
+    print(f"Current Group ID: {group.id}")
     membership = Member.query.filter_by(user_id=current_user.id, group_id=group_id).first()
     if not membership:
         flash('You are not a member of this group.', 'info')
