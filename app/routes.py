@@ -78,15 +78,15 @@ def mkquiz():
             if add_question_form.mcQuestion.data: 
                 
                 if not add_question_form.mcOptions.data or len(add_question_form.mcOptions.data.split(',')) < 2:
-                    flash('Please provide at least two options for your multiple-choice question.', 'error')
+                    flash('Please provide at least two options for your multiple-choice question.', 'warning')
                     return redirect(url_for('mkquiz'))
                 try:
                     correct_option = int(add_question_form.correctOption.data)
                     if correct_option < 0 or correct_option >= len(add_question_form.mcOptions.data.split(',')):
-                        flash('Invalid correct option selected.', 'error')
+                        flash('Invalid correct option selected.', 'warning')
                         return redirect(url_for('mkquiz'))
                 except ValueError:
-                    flash('Invalid correct option selected.', 'error')
+                    flash('Invalid correct option selected.', 'warning')
                     return redirect(url_for('mkquiz'))
 
                 questions.append({
@@ -184,7 +184,7 @@ def take_quiz(quiz_id):
         all_answered = all(i in user_answers for i, q in enumerate(questions) if q['type'] == 'mc')
 
         if not all_answered:
-            flash('Please answer all multiple-choice questions before submitting.', 'error')
+            flash('Please answer all multiple-choice questions before submitting.', 'warning')
         else:
           
             score = 0
@@ -247,20 +247,20 @@ def register_handler():
     confirm_password=request.form.get('confirm_password')
 
     if password != confirm_password:
-        error_message='Passwords do not match'
+        flash('Passwords do not match', 'warning')
         return redirect(url_for('register'))
     
     existing_user=User.query.filter((User.username==username) | (User.email==email)).first()
     if existing_user:
         if existing_user.username==username and existing_user.email==email:
-            error_message='Username and Email are in use'
-            return redirect(url_for('register',error=error_message))
+            flash('Username and Email is in use', 'warning')
+            return redirect(url_for('register'))
         elif existing_user.username==username:
-            error_message='Username is in use'
-            return redirect(url_for('register',error=error_message))
+            flash('Username is in use', 'warning')
+            return redirect(url_for('register'))
         else:
-            error_message='Email is in use'
-            return redirect(url_for('register',error=error_message))
+            flash('Email is in use', 'warning')
+            return redirect(url_for('register'))
         
     hashed_password=generate_password_hash(password)
     new_user=User(username=username, email=email, password=hashed_password)

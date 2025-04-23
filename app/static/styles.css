@@ -168,6 +168,11 @@ button {
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
+    background-color: #5a8e3c;
+    color: white;
+    border-radius: 30px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
 }
 
 .flair {
@@ -248,4 +253,15 @@ li {
 
 titles {
     font-size: 34;
+}
+
+input[type="text"], input[type="password"],
+input[type="file"], input[type="email"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    box-sizing: border-box;
 }

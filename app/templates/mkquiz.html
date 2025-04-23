@@ -10,7 +10,9 @@
         {{ save_quiz_form.quizName }}
     </div>
     <div>
-        {{ save_quiz_form.save_quiz }}
+        <button type="submit">
+            {{ save_quiz_form.save_quiz }}
+        </button>
     </div>
 </form>
 
@@ -38,7 +40,9 @@
     </div> 
     
     <div> 
-        {{ add_question_form.add_question }} 
+        <button type="submit">
+            {{ add_question_form.add_question }}
+        </button>
     </div> 
 </form> 
 
@@ -46,7 +50,9 @@
 <form method="POST" action="{{ url_for('mkquiz') }}"> 
     {{ clear_preview_form.hidden_tag() }}
     <div>
-        {{ clear_preview_form.clear_preview }} 
+        <button type="submit">
+            {{ clear_preview_form.clear_preview }}
+        </button>
     </div> 
 </form> 
 

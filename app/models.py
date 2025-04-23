@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from flask_login import UserMixin, current_user
 from app import db, mail
-from flask import current_app, url_for
+from flask import current_app, url_for, flash
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask_mail import Message as MailMessage
 from app import *
@@ -73,10 +73,9 @@ class User(db.Model, UserMixin):
         msg.body = f'Your confirmation link is: {confirm_url}'
         try:
             mail.send(msg)
-            print('Confirmation email sent to',self.email)
-            print(f'confirmation link: {confirm_url}')
+            flash(f'Confirmation email sent to{self.email}. Check your inbox!', 'success')
         except Exception as e:
-            print('Failed to send confirmation email:', e)
+            flash(f'Failed to send confirmation email: {e}', 'error')
 
 class StudyGroup(db.Model):
     __tablename__='studygroup'
