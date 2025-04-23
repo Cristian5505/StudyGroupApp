@@ -41,13 +41,23 @@ def group(group_id):
         return redirect(url_for('home'))
 
     muted_user = MutedUser.query.filter_by(group_id=group_id, user_id=current_user.id).first()
-
-    if muted_user and (muted_user.mute_until is None or muted_user.mute_until > datetime.utcnow()):
-        flash('You are muted and cannot send messages.', 'danger')
-        return redirect(url_for('group', group_id=group_id))
-
+    print(f"Muted user: {muted_user}")  # Debugging
+    if muted_user:
+        print(f"Muted until: {muted_user.mute_until}")  # Debugging
+    
     form = MessageForm()
     if form.validate_on_submit():
+        
+            # Check if the user is muted
+        if muted_user:
+            print(f"Muted user exists. Mute until: {muted_user.mute_until}, Current time: {datetime.utcnow()}")
+            if muted_user.mute_until is None or muted_user.mute_until > datetime.utcnow():
+                print("Mute condition met. Preventing message submission.")
+                flash('You are muted and cannot send messages.', 'danger')
+            return redirect(url_for('group', group_id=group_id))
+        else:
+            print("Mute condition not met. Allowing message submission.")
+
         message_text = form.message.data
         new_message = Message(user_id=current_user.id, group_id=group.id, message=message_text)
         db.session.add(new_message)
@@ -61,9 +71,11 @@ def group(group_id):
         db.session.commit()
         return redirect(url_for('group', group_id=group.id))
 
-    messages = Message.query.filter_by(group_id=group.id).order_by(Message.time.desc()).all()
-    return render_template('group.html', group=group, messages=messages, form=form)
+    # Fetch messages and uploaded files
+    messages = Message.query.filter_by(group_id=group.id).all()
+    uploaded_files = UploadedFile.query.filter_by(group_id=group.id).all()
 
+    return render_template('group.html', group=group, messages=messages, uploaded_files=uploaded_files, form=form, muted_user=muted_user)
 @app.route('/test_db')
 def test_db():
     try:
@@ -345,7 +357,9 @@ def customization():
 def profile(user_id):
     user = User.query.get(user_id)
     groups = StudyGroup.query.join(Member).filter(Member.user_id == user.id).all()
-    return render_template('profile.html', user=user, groups=groups)
+    form = InviteUserForm()  # Create an instance of the form
+
+    return render_template('profile.html', user=user, groups=groups, form=form)
 
 @app.route('/group_management')
 @login_required
@@ -398,15 +412,16 @@ def join_group():
         )
     public_groups = base_query.all()
 
-    banned_user = BannedUser.query.filter_by(group_id=group_id, user_id=current_user.id).first()
-
-    if banned_user:
-        flash('You are banned from this group.', 'danger')
-        return redirect(url_for('index'))
-
     if request.method == 'POST':
         group_id = request.form.get('group_id')
         group = StudyGroup.query.get(group_id)
+        
+        banned_user = BannedUser.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+
+        if banned_user:
+            flash('You are banned from this group.', 'danger')
+            return redirect(url_for('join_group'))
+        
         if group and group.public:
             new_member = Member(user_id=current_user.id, group_id=group.id)
             db.session.add(new_member)
@@ -429,8 +444,13 @@ def mute_user(group_id, user_id):
     duration = int(request.form.get('duration', 0))
     mute_until = datetime.utcnow() + timedelta(minutes=duration)
 
-    muted_user = MutedUser(group_id=group_id, user_id=user_id, mute_until=mute_until)
-    db.session.add(muted_user)
+    muted_user = MutedUser.query.filter_by(group_id=group_id, user_id=user_id).first()
+    if muted_user:
+        muted_user.mute_until = mute_until  # Update existing mute
+    else:
+        muted_user = MutedUser(group_id=group_id, user_id=user_id, mute_until=mute_until)
+        db.session.add(muted_user)
+
     db.session.commit()
     flash('User has been muted.', 'success')
     return redirect(url_for('group', group_id=group_id))
@@ -456,10 +476,19 @@ def ban_user(group_id, user_id):
     if current_user.id != group.owner_id:
         abort(403)  # Only the group owner can ban users
 
-    banned_user = BannedUser(group_id=group_id, user_id=user_id)
-    db.session.add(banned_user)
+    # Remove the user from the group
+    membership = Member.query.filter_by(group_id=group_id, user_id=user_id).first()
+    if membership:
+        db.session.delete(membership)
+
+    # Add the user to the banned list
+    banned_user = BannedUser.query.filter_by(group_id=group_id, user_id=user_id).first()
+    if not banned_user:
+        banned_user = BannedUser(group_id=group_id, user_id=user_id)
+        db.session.add(banned_user)
+
     db.session.commit()
-    flash('User has been banned.', 'success')
+    flash('User has been banned and removed from the group.', 'success')
     return redirect(url_for('group', group_id=group_id))
 
 #Group File Uploading
@@ -468,9 +497,11 @@ def upload_file(group_id):
     group = StudyGroup.query.get_or_404(group_id)
 
     # Ensure the user is a member of the group
-    if current_user not in group.members:
+    membership = Member.query.filter_by(user_id=current_user.id, group_id=group_id).first()
+    if not membership:
         flash('You are not a member of this group.', 'danger')
         return redirect(url_for('group', group_id=group_id))
+
 
     # Check if the post request has the file part
     if 'file' not in request.files:
@@ -486,14 +517,13 @@ def upload_file(group_id):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-        # Save the file as a message in the database
-        message = Message(
-            content=f"Uploaded file: {filename}",
-            author=current_user,
-            group_id=group_id,
-            file_path=filename
+        # Save the file as an uploaded file in the database
+        uploaded_file = UploadedFile(
+            filename=filename,
+            uploader_id=current_user.id,
+            group_id=group_id
         )
-        db.session.add(message)
+        db.session.add(uploaded_file)
         db.session.commit()
 
         flash('File uploaded successfully.', 'success')
@@ -506,7 +536,8 @@ def invite_user(group_id, user_id):
     user = User.query.get_or_404(user_id)
 
     # Ensure the current user is a member of the group
-    if current_user not in group.members:
+    membership = Member.query.filter_by(user_id=current_user.id, group_id=group_id).first()
+    if not membership:
         flash('You must be a member of the group to invite others.', 'danger')
         return redirect(url_for('profile', user_id=user_id))
 
@@ -515,8 +546,8 @@ def invite_user(group_id, user_id):
         flash('This user is already a member of the group.', 'warning')
         return redirect(url_for('profile', user_id=user_id))
 
-    # Add the user to the group
-    group.members.append(user)
+    new_member = Member(user_id=user.id, group_id=group_id)
+    db.session.add(new_member)
     db.session.commit()
 
     flash(f'{user.username} has been invited to the group.', 'success')
