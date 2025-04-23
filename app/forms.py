@@ -72,3 +72,6 @@ class SaveQuizForm(FlaskForm):
 
 class ClearPreviewForm(FlaskForm):
     clear_preview = SubmitField('Clear Preview')
+
+class InviteUserForm(FlaskForm):
+    submit = SubmitField('Invite')
