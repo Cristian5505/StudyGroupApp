@@ -251,7 +251,8 @@ li {
     background-color: blue;
 }
 
-titles {
+titles{
+    color: white;
     font-size: 34;
 }
 
@@ -279,4 +280,36 @@ input[type="file"], input[type="email"], textarea {
 
 .status-indicator.inactive {
     background-color: gray;
+}
+
+p{
+    font-size: 24;
+    color: white;
+
+}
+
+label{
+    font-size: 24;
+    color: white;
+
+}
+
+h1 {
+    color: white !important;
+}
+
+h2 {
+    color: white !important;
+}
+
+h3 {
+    color: white !important;
+}
+
+h4 {
+    font-size: 18 !important;
+    color: white !important;
+}
+#text {
+    color: white !important;
 }
