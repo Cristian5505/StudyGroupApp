@@ -31,6 +31,9 @@
         {% endif %}
     {% endfor %}
 </ul>
+{% elif user == current_user %}
+<p>You cannot invite yourself to your own groups.</p>
+{% else %}
 {% else %}
 <p>You are not in any groups.</p>
 {% endif %}

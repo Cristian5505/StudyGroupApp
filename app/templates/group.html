@@ -50,15 +50,15 @@
     <!-- Modal for Member Actions -->
     <div id="memberActionsModal" class="modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
         <h4>Member Actions</h4>
-        <form method="POST" action="{{ url_for('mute_user', group_id=group.id, user_id=0) }}" id="muteForm">
+        <form method="POST" action="{{ url_for('mute_user', group_id=group.id, user_id=member.user_id) }}" id="muteForm">
             <label for="muteDuration">Mute Duration (minutes):</label>
             <input type="number" id="muteDuration" name="duration" min="1" required>
             <button type="submit" class="btn btn-primary">Mute</button>
         </form>
-        <form method="POST" action="{{ url_for('kick_user', group_id=group.id, user_id=0) }}" id="kickForm">
+        <form method="POST" action="{{ url_for('kick_user', group_id=group.id, user_id=member.user_id) }}" id="kickForm">
             <button type="submit" class="btn btn-warning">Kick</button>
         </form>
-        <form method="POST" action="{{ url_for('ban_user', group_id=group.id, user_id=0) }}" id="banForm">
+        <form method="POST" action="{{ url_for('ban_user', group_id=group.id, user_id=member.user_id) }}" id="banForm">
             <button type="submit" class="btn btn-danger">Ban</button>
         </form>
     <!-- View Profile Button -->
