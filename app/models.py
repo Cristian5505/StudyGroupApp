@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_login import UserMixin, current_user
 from app import db, mail
 from flask import current_app, url_for, flash
@@ -15,16 +15,18 @@ class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True, unique=True, nullable=False)
-    password = db.Column(db.String(64), index=True, nullable=False)
-    email = db.Column(db.String(64), index=True, unique=True, nullable=False)
+    password = db.Column(db.String(256), index=True, nullable=False)
+    email = db.Column(db.String(256), index=True, unique=True, nullable=False)
     email_confirmed = db.Column(db.Boolean, default=False)
     admin = db.Column(db.Boolean, index=True, default=False) #site admin, different from group admin / mod
     picture =db.Column(db.String(256), nullable=False, default = "scsu.jpg") #path to their profile picture
     description = db.Column(db.String(256), default = "") #for their profile
+    last_active = db.Column(db.DateTime, default=datetime.utcnow) #last time the user was active on the site
 
     study_groups = db.relationship('StudyGroup', backref='owner', lazy=True) #one to many, user can create multiple study groups
     memberships = db.relationship('Member', backref='user', lazy=True)#one to many, user can be members of multiple groups
     messages = db.relationship('Message', backref='author', lazy=True)#one to many, user can send multiple messages
+    
     
     def set_password(self, password):
         self.password = generate_password_hash(password) 
@@ -56,6 +58,11 @@ class User(db.Model, UserMixin):
     def generate_confirmation_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])
         return s.dumps({'confirm': self.id}, salt='email_confirm')
+    
+    def is_active(self):
+        if self.last_active is None:
+            return False
+        return self.last_active > datetime.now() - timedelta(minutes=5)
     
     @staticmethod
     def confirm_email_token(token, expiration=3600):
@@ -155,3 +162,23 @@ class Quiz(db.Model):
     questions = db.Column(db.Text, nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+class MutedUser(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('studygroup.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    mute_until = db.Column(db.DateTime, nullable=True)  # Optional: Time until mute expires
+    
+class BannedUser(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('studygroup.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+class UploadedFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(256), nullable=False)
+    uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('studygroup.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    uploader = db.relationship('User', backref='uploaded_files')
+    group = db.relationship('StudyGroup', backref='uploaded_files')

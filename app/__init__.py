@@ -25,7 +25,7 @@ db = SQLAlchemy(app)
 
 #Login Configuration
 login = LoginManager(app)
-mail=Mail(app)
+mail = Mail(app)
 login.login_view = 'login'
 
 from app import routes, models
