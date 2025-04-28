@@ -13,6 +13,11 @@ body {
     color: white;
 }
 
+.container {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
 .page-container {
     display: flex;
     flex-direction: column;
@@ -311,6 +316,11 @@ h1 {
 
 h2 {
     color: white !important;
+}
+
+h3 strong {
+    display: block;
+    text-align: center;
 }
 
 h3 {

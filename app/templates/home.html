@@ -2,32 +2,34 @@
 {% block title %}Landing Page{% endblock %}
 {% block page %}<h1>Home</h1>{% endblock %}
 {% block content %}
+<div class="container">
    <body>
     {% if current_user.is_authenticated %}
-        <h2>Welcome {{ current_user.username }}</h2>
-        <titles><strong>Think Tank:</strong></titles>
+        <h2 style="text-align: center;">Welcome {{ current_user.username }}</h2>
+        <h3 class="white"><strong>Think Tank:</strong></span></h3>
         <p>Think Tank is a study application designed to simplify the process of students creating dedicated study groups outside of the classroom.</p>
-        <titles><strong>Create Private or Public Groups:</strong></titles>
+        <h3 class="white"><strong>Create Private or Public Groups:</strong></span></h3>
         <p>You can create your own private or public study groups, allowing you to share notes, files, and communicate with fellow students in a focused and organized environment.</p>
-        <titles><strong>No More Social Pressure:</strong></titles>
+        <h3 class="white"><strong>No More Social Pressure:</strong></span></h3>
         <p>With Think Tank, you don’t have to worry about the social pressure of asking other students if they want to study together or attending intimidating office hours with your professor.</p>
-        <titles><strong>Discuss Any Subject:</strong></titles>
+        <h3 class="white"><strong>Discuss Any Subject:</strong></span></h3>
         <p>Whether you have a shared interest in a specific subject or just want to improve your academic standing, Think Tank allows you to discuss and collaborate with others, regardless of distance.</p>
-        <titles><strong>Train Your Brain:</strong></titles>
+        <h3 class="white"><strong>Train Your Brain:</strong></span></h3>
         <p>Join Think Tank and give your brain the workout it deserves! Take a swim in the sea of knowledge and enhance your learning experience with ease.</p>
     {% else %}
-       <h2>Welcome, Please Log in</h2>
-       <titles><strong>Think Tank:</strong></titles>
+       <h2  style="text-align: center;">Welcome, Please Log in</h2>
+       <h3 class="white"><strong>Think Tank:</strong></span></h3>
        <p>Think Tank is a study application designed to simplify the process of students creating dedicated study groups outside of the classroom.</p>
-       <titles><strong>Create Private or Public Groups:</strong></titles>
+       <h3 class="white"><strong>Create Private or Public Groups:</strong></span></h3>
        <p>You can create your own private or public study groups, allowing you to share notes, files, and communicate with fellow students in a focused and organized environment.</p>
-       <titles><strong>No More Social Pressure:</strong></titles>
+       <h3 class="white"><strong>No More Social Pressure:</strong></span></h3>
        <p>With Think Tank, you don’t have to worry about the social pressure of asking other students if they want to study together or attending intimidating office hours with your professor.</p>
-       <titles><strong>Discuss Any Subject:</strong></titles>
+       <h3 class="white"><strong>Discuss Any Subject:</strong></span></h3>
        <p>Whether you have a shared interest in a specific subject or just want to improve your academic standing, Think Tank allows you to discuss and collaborate with others, regardless of distance.</p>
-       <titles><strong>Train Your Brain:</strong></titles>
+       <h3 class="white"><strong>Train Your Brain:</strong></span></h3>
        <p>Join Think Tank and give your brain the workout it deserves! Take a swim in the sea of knowledge and enhance your learning experience with ease.</p>
     {% endif %}
     
    </body>
+</div>
 {% endblock %}
