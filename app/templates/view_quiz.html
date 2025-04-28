@@ -8,13 +8,14 @@
         <li class="list-group-item">
             {{ quiz.name }}
             <div class="button-group"> 
-                <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="button-link success">Take Quiz</a> 
-                <a href="{{ url_for('download_quiz', quiz_id=quiz.id) }}" class="button-link primary">Download</a> 
+                <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="button-link">Take Quiz</a> 
+                <a href="{{ url_for('download_quiz', quiz_id=quiz.id) }}" class="button-link">Download</a> 
             </div>
         </li>
     {% endfor %}
 </ul>
 
-<a href="{{ url_for('mkquiz') }}" class="button-link primary">Quiz Creator</a>
-
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{{ url_for('mkquiz') }}" class="button">Quiz Creator</a>
+</div>
 {% endblock %}

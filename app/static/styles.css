@@ -4,11 +4,12 @@ body {
     padding: 0;
     font-size: 22px;
     height: 100%;
-    background: url('tank_bottom.png');
-    background-position: center;
+    background: linear-gradient(to bottom, transparent 90%, #585855 100%),
+    url('tank_bottom.png');
+    background-position: top center;
     background-repeat: no-repeat;
     background-size: cover;
-    min-height: 140vh;
+    min-height: 160vh;
     color: white;
 }
 
@@ -16,32 +17,31 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    min-height: 140vh;
+    min-height: 160vh;
 }
 
+.button {
+    align-self: flex-start;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #5a8e3c;
+    color: white;
+    border-radius: 30px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
+}
 
 .button-link {
     display: inline-block;
     padding: 8px 16px; 
     font-size: 16px; 
-    text-decoration: none; 
-    border: 2px solid #007bff; 
-    border-radius: 5px;     
-    color: #007bff;    
-    background-color: transparent; 
-    transition: all 0.3s ease; 
-}
-
-.button-link.success {
-    border-color: #a72828; 
-    color: #00ffff; 
-}
-
-
-
-.button-link.primary {
-    border-color: #0011ff;
-    color: #00ffff;
+    cursor: pointer;
+    background-color: #5a8e3c;
+    color: white;
+    border-radius: 30px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
 }
 
 .page-container::before {
@@ -108,7 +108,12 @@ body {
     border: 1px solid #ccc;
     padding: 10px;
     margin-top: 20px;
-}
+    color: black;
+    background-color: white;
+    font-size: 14px;
+    box-sizing: border-box;
+    border-radius: 5px;
+} 
 
 .header {
     display: flex;
@@ -191,8 +196,13 @@ ul {
     list-style-type: none;
 }
 
+li.black {
+    color: black;
+}
+
 li {
-    padding: 20px
+    padding: 20px;
+    color: white;
 }
 #flash-messages {
     position: fixed;
@@ -304,6 +314,10 @@ h2 {
 }
 
 h3 {
+    color: black !important;
+}
+
+h3.white {
     color: white !important;
 }
 
@@ -313,4 +327,8 @@ h4 {
 }
 #text {
     color: white !important;
+}
+
+small {
+    color: white;
 }

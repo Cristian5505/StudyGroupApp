@@ -7,7 +7,7 @@
 <!-- This is where Files will be uploaded-->
 <form method="POST" enctype="multipart/form-data">
     <label for ="file">Upload a file:</label>
-    <input type="file" name="file" id="file" required>
+    <input style="background-color: white; color: black;" type="file" name="file" id="file" required>
     <button type="submit">Upload</button>
 </form>
 
@@ -23,8 +23,8 @@
 <h2> Your Uploaded Files </h2>
 <ul>
     {% for file in files %}
-        <li>
-            <a href="{{ url_for('download_file', filename=file) }}">{{ file }}</a>
+        <li style="text-align: center; margin-top: 20px;">
+            <a href="{{ url_for('download_file', filename=file) }}" class="button">{{ file }}</a>
         </li>
     {% endfor %}
 </ul>

@@ -18,7 +18,6 @@
 
 <form method="POST" action="{{ url_for('mkquiz') }}"> 
     {{ add_question_form.hidden_tag() }} 
-    <h3>Multiple Choice Question</h3> 
     <div> 
         {{ add_question_form.mcQuestion.label }} 
         {{ add_question_form.mcQuestion }} 
@@ -30,10 +29,9 @@
     <div> 
         {{ add_question_form.correctOption.label }} 
         {{ add_question_form.correctOption }} 
-        <small class="form-text text-muted" style="color: white;">(Enter the option number starting from 1)</small>
+        <small>(Enter the option number starting from 1)</small>
     </div> 
     
-    <h3>Open-Ended Question</h3> 
     <div> 
         {{ add_question_form.openEndedQuestion.label }} 
         {{ add_question_form.openEndedQuestion }} 
@@ -58,14 +56,14 @@
 
 <div class="preview">
     <h3>Preview Quiz</h3>
-    <div id="quizPreview">
+    <div id="quizPreview" class="textarea">
         {% for question in questions %}
             {% if question['type'] == 'mc' %}
                 <strong>Multiple Choice:</strong> {{ question['question'] }} <br>
                 <strong>Options:</strong> 
                 <ul>
                 {% for i, option in enumerate(question['options']) %}
-                    <li>{{ option }} 
+                    <li class="black">{{ option }} 
                     {% if 'correct' in question and i == question['correct'] %} 
                         (Correct)
                     {% endif %}
@@ -79,9 +77,9 @@
         {% endfor %}
     </div>
 </div>
-
-<a href="{{ url_for('view_quizzes') }}" class="button-link primary">Saved Quizzes</a>
-
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{{ url_for('view_quizzes') }}" class="button" >Saved Quizzes</a>
+</div>
 {% endblock %}
 
 

@@ -3,15 +3,15 @@
 <h2>Quiz Results for {{ quiz.name }}</h2>
 
 {% for i, question in enumerate(questions) %}
-    <h3>Question {{ i + 1 }}: {{ question.question }}</h3>
+    <h3 class="white">Question {{ i + 1 }}: {{ question.question }}</h3>
 
     {% if question.type == 'mc' %}
         <p>Your Answer: {{ question.options[user_answers.get(i)] if user_answers.get(i) is not none else 'Not answered' }}</p>
         <p>Correct Answer: {{ question.options[question.correct] }}</p>
         {% if user_answers.get(i) == question.correct %}
-            <p class="text-success">Correct!</p>
+            <p style="color: lightgreen;">Correct!</p>
         {% else %}
-            <p class="text-danger">Incorrect</p>
+            <p style="color: red">Incorrect</p>
         {% endif %}
     {% elif question.type == 'open_ended' %}
         <p>Your Answer: {{ user_answers.get(i) }}</p>
@@ -19,10 +19,11 @@
     <hr>
 {% endfor %}
 
-<h3>Final Score: {{ score }} / {{ questions|length }}</h3>
-
-<a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="button-link success">Take Again</a>
-<a href="{{ url_for('view_quizzes') }}" class="button-link primary">Back to Quizzes</a>
+<h3 class="white">Final Score: {{ score }} / {{ questions|length }}</h3>
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="button">Take Again</a>
+    <a href="{{ url_for('view_quizzes') }}" class="button">Back to Quizzes</a>
+</div>
 {% endblock %}
 
 
