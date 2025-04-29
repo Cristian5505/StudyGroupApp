@@ -5,19 +5,19 @@
 
     <img src="{{ url_for('static', filename='profile_pics/' + user.picture) }}" alt="Profile Picture" class=profile-pic style="width: 180px; height: 180px;">
 
-    <h3>Description:</h3> 
+    <h3 class="white">Description:</h3> 
     <h4>{{ user.description }}</h4>
 
-    <h3>Groups:</h3>
+    <h3 class="white">Groups:</h3>
         <ul>
             {% for group in groups %}
-                <li><a href="{{ url_for('group', group_id=group.id) }}">{{ group.name }}</a></li>
+                <li><a href="{{ url_for('group', group_id=group.id) }}" class="button">{{ group.name }}</a></li>
             {% endfor %}
         </ul>
 
     <!-- Display groups the current user is in but the profile user is not -->
 {% if current_user.study_groups %}
-<h3>Invite {{ user.username }} to Your Groups</h3>
+<h3 class="white">Invite {{ user.username }} to Your Groups</h3>
 <ul>
     {% for group in current_user.study_groups %}
         {% if user not in group.members %}
