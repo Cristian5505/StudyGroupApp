@@ -157,7 +157,7 @@
    {% endif %}
    
    {% if current_user.id == group.owner_id %}
-   <form method="POST" action="{{ url_for('group', group_id=group.id) }}">
+   <form method="POST" action="{{ url_for('group', group_id=group.id) }}" style="color: white;">
     
     Select Flairs
        
