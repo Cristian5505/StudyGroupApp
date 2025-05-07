@@ -14,10 +14,30 @@ Whether you have a shared interest in a specific subject or just want to improve
 Train Your Brain:
 Join Think Tank and give your brain the workout it deserves! Take a swim in the sea of knowledge and enhance your learning experience with ease.
 
-# 1. Clone the repository
+# Features
 
-git clone https://github.com/yourusername/study-group-app.git
-cd study-group-app
+- User registration and login
+- Create and join study groups
+- Search for public groups
+- Flair tags for groups
+- Group messaging
+- Group admin controls
+- View member profiles
+- Profile customization
+- Post and take quizzes
+- Notes and file sharing
+
+# Installation
+
+# 1. Clone the correct repository
+
+# If you wish to run it locally (Reccomended)
+git clone https://github.com/Cristian5505/StudyGroupApp/tree/localMain
+cd StudyGroupApp
+
+# If IP is added to authorized users on our database
+git clone https://github.com/Cristian5505/StudyGroupApp/tree/main
+cd StudyGroupApp
 
 # 2. Install requirements
 

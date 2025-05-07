@@ -5,7 +5,7 @@ from app import db, mail
 from flask import current_app, url_for, flash
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask_mail import Message as MailMessage
-from app import *
+from app import db
 
 def get_user(username):
     user = User.query.filter_by(username=username).first()
