@@ -31,7 +31,7 @@ Join Think Tank and give your brain the workout it deserves! Take a swim in the 
 
 # 1. Clone the correct repository
 
-# If you wish to run it locally (Reccomended)
+# If you wish to run it locally (Recommended)
 git clone https://github.com/Cristian5505/StudyGroupApp/tree/localMain
 cd StudyGroupApp
 
